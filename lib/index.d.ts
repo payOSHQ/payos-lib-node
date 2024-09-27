@@ -3,13 +3,15 @@ declare class PayOS {
     private readonly clientId;
     private readonly apiKey;
     private readonly checksumKey;
+    private readonly partnerCode?;
     /**
      * Create a payOS object to use payment channel methods. Credentials are fields provided after creating a payOS payment channel
      * @param {string} clientId Client ID of the payOS payment channel
      * @param {string} apiKey Api Key of the payOS payment channel
      * @param {string} checksumKey Checksum Key of the payOS payment channel
+     * @param {string} partnerCode Your partner code
      */
-    constructor(clientId: string, apiKey: string, checksumKey: string);
+    constructor(clientId: string, apiKey: string, checksumKey: string, partnerCode?: string);
     /**
      * Create a payment link for the order data passed in the parameter
      * @param {CheckoutRequestType} paymentData Payment data
@@ -19,7 +21,7 @@ declare class PayOS {
      * Get payment information of an order that has created a payment link
      * @param {number | string} orderId Order Id
      */
-    getPaymentLinkInfomation(orderId: string | number): Promise<PaymentLinkDataType>;
+    getPaymentLinkInformation(orderId: string | number): Promise<PaymentLinkDataType>;
     /**
      * Validate the Webhook URL of a payment channel and add or update the Webhook URL for that Payment Channel if successful.
      * @param {string} webhookUrl Your Webhook URL

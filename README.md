@@ -1,7 +1,7 @@
 The payOS Node library provides convenient access to the payOS API from applications written in server-side JavaScript.
 
 ## Documentation
-See the [payOS API docs](https://payos.vn/docs/api/) for more infomation.
+See the [payOS API docs](https://payos.vn/docs/api/) for more information.
 
 ## Installation
 Install the package with:
@@ -20,6 +20,8 @@ You need to initialize the PayOS object with the Client ID, Api Key and Checksum
 const PayOS = require("@payos/node");
 
 const payos = new PayOS("YOUR_PAYOS_CLIENT_ID", "YOUR_PAYOS_API_KEY", "YOUR_PAYOS_CHECKSUM_KEY");
+// or
+const payos = new PayOS("YOUR_PAYOS_CLIENT_ID", "YOUR_PAYOS_API_KEY", "YOUR_PAYOS_CHECKSUM_KEY", "YOUR_PARTNER_CODE" );
 ```
 
 * ES Modules
@@ -27,6 +29,8 @@ const payos = new PayOS("YOUR_PAYOS_CLIENT_ID", "YOUR_PAYOS_API_KEY", "YOUR_PAYO
 import PayOS from "@payos/node";
 
 const payos = new PayOS("YOUR_PAYOS_CLIENT_ID", "YOUR_PAYOS_API_KEY", "YOUR_PAYOS_CHECKSUM_KEY");
+//or
+const payos = new PayOS("YOUR_PAYOS_CLIENT_ID", "YOUR_PAYOS_API_KEY", "YOUR_PAYOS_CHECKSUM_KEY", "YOUR_PARTNER_CODE");
 ```
 
 ### Methods included in the PayOS object
@@ -65,8 +69,10 @@ Return data type:
   amount: number;
   description: string;
   orderCode: number;
+  currency: string;
   paymentLinkId: string;
   status: string;
+  expiredAt: number;
   checkoutUrl: string;
   qrCode: string
 }
@@ -91,13 +97,13 @@ const requestData = {
 const paymentLinkData = await payos.createPaymentLink(requestData);
 ```
 
-* **getPaymentLinkInfomation**
+* **getPaymentLinkInformation**
 
 Get payment information of an order that has created a payment link.
 
 Syntax:
 ```javascript
-await payos.getPaymentLinkInfomation(id);
+await payos.getPaymentLinkInformation(id);
 ```
 
 Parameters:
@@ -138,7 +144,7 @@ Transaction type:
 ```
 Example:
 ```javascript
-const paymentLinkInfo = await payos.getPaymentLinkInfomation(1234);
+const paymentLinkInfo = await payos.getPaymentLinkInformation(1234);
 ```
 
 * **cancelPaymentLink**
@@ -213,6 +219,7 @@ Return data type:
   accountNumber: string;
   reference: string;
   transactionDateTime: string;
+  currency: string;
   paymentLinkId: string;
   code: string;
   desc: string;

@@ -1,4 +1,10 @@
 export type DataType<T> = T | null | undefined;
+export type HeadersType = {
+    "x-client-id": string;
+    "x-api-key": string;
+    "Content-Type": string;
+    "x-partner-code"?: string;
+};
 export type PayOSResponseType<T> = {
     code: string;
     desc: string;
@@ -30,8 +36,10 @@ export type CheckoutResponseDataType = {
     amount: number;
     description: string;
     orderCode: number;
+    currency: string;
     paymentLinkId: string;
     status: string;
+    expiredAt?: number;
     checkoutUrl: string;
     qrCode: string;
 };
@@ -69,6 +77,7 @@ type TransactionType = {
 export type WebhookType = {
     code: string;
     desc: string;
+    success: boolean;
     data: WebhookDataType;
     signature: string;
 };
@@ -79,6 +88,7 @@ export type WebhookDataType = {
     accountNumber: string;
     reference: string;
     transactionDateTime: string;
+    currency: string;
     paymentLinkId: string;
     code: string;
     desc: string;
