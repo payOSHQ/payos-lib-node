@@ -68,4 +68,4 @@ fi
 echo "Publish package with tag: $TAG"
 
 # Publish with the appropriate tag
-npm publish --tags "$TAG"
+npm publish --tag "$TAG"

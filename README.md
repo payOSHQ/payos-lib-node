@@ -88,10 +88,9 @@ For more information about webhooks, see [the API doc](https://payos.vn/docs/api
 When the API return a non-success status code (i.e, 4xx or 5xx response) or non-success code data (any code except '00'), a class `APIError` or its subclass will be thrown:
 
 ```ts
-await payos
-  .request({
-    endpoint: '/not-found',
-    method: 'GET',
+payos
+  .get({
+    path: '/not-found',
   })
   .catch((err) => {
     if (err instanceof APIError) {
