@@ -1,233 +1,254 @@
-The payOS Node library provides convenient access to the payOS API from applications written in server-side JavaScript.
+# payOS Node.js Library
 
-## Documentation
-See the [payOS API docs](https://payos.vn/docs/api/) for more information.
+[![Version](https://img.shields.io/npm/v/@payos/node.svg)](https://www.npmjs.org/package/@payos/node)
+[![Downloads](https://img.shields.io/npm/dm/@payos/node.svg)](https://www.npmjs.com/package/@payos/node)
+
+The payOS Node library provides convenient access to the payOS Merchant API from applications written in JavaScript or Typescript.
+
+To learn how to use payOS Merchant API, checkout our [API Reference](https://payos.vn/docs/api) and [Documentation](https://payos.vn/docs). We also have some examples in [Examples](./examples/).
 
 ## Installation
-Install the package with:
+
 ```bash
 npm install @payos/node
-# or
-yarn add @payos/node
 ```
 
 ## Usage
-### Initialize
-You need to initialize the PayOS object with the Client ID, Api Key and Checksum Key of the payment channel you created. 
 
-* CommonJS
-```javascript
-const PayOS = require("@payos/node");
+### Basic usage
 
-const payos = new PayOS("YOUR_PAYOS_CLIENT_ID", "YOUR_PAYOS_API_KEY", "YOUR_PAYOS_CHECKSUM_KEY");
+First you need initialize the client to interacting with payOS Merchant API.
+
+```ts
+import { PayOS } from '@payos/node';
 // or
-const payos = new PayOS("YOUR_PAYOS_CLIENT_ID", "YOUR_PAYOS_API_KEY", "YOUR_PAYOS_CHECKSUM_KEY", "YOUR_PARTNER_CODE" );
+const { PayOS } = require('@payos/node');
+
+const payos = new PayOS({
+  clientId: process.env.PAYOS_CLIENT_ID,
+  apiKey: process.env.PAYOS_API_KEY,
+  checksumKey: process.env.PAYOS_CHECKSUM_KEY,
+  // ... other options
+});
 ```
 
-* ES Modules
-```javascript
-import PayOS from "@payos/node";
+Then you can interact with payOS Merchant API, example create a payment link using `paymentRequests.create()`.
 
-const payos = new PayOS("YOUR_PAYOS_CLIENT_ID", "YOUR_PAYOS_API_KEY", "YOUR_PAYOS_CHECKSUM_KEY");
-//or
-const payos = new PayOS("YOUR_PAYOS_CLIENT_ID", "YOUR_PAYOS_API_KEY", "YOUR_PAYOS_CHECKSUM_KEY", "YOUR_PARTNER_CODE");
+```ts
+const paymentLink = await payos.paymentRequests.create({
+  orderCode: 123,
+  amount: 2000,
+  description: 'payment',
+  returnUrl: 'https://your-url.com',
+  cancelUrl: 'https://your-url.com',
+});
 ```
 
-### Methods included in the PayOS object
+### Webhook verification
 
-* **createPaymentLink**
+You can register an endpoint to receive the payment webhook.
 
-Create a payment link for the order data
-
-Syntax:
-```javascript
-await payos.createPaymentLink(requestData);
+```ts
+const confirmResult = await payos.webhooks.confirm('https://your-url.com/payos-webhook');
 ```
-Parameter data type: 
-```javascript
-{
-  orderCode: number;
-  amount: number;
-  description: string;
-  cancelUrl: string;
-  returnUrl: string;
-  signature?: string;
-  items?: { name: string; quantity: number; price: number }[];
-  buyerName?: string;
-  buyerEmail?: string;
-  buyerPhone?: string;
-  buyerAddress?: string;
-  expiredAt?: number;
+
+Then using `webhooks.verify()` to verify and receive webhook data.
+
+```ts
+const webhookData = await payos.webhooks.verify({
+  code: '00',
+  desc: 'success',
+  success: true,
+  data: {
+    orderCode: 123,
+    amount: 3000,
+    description: 'VQRIO123',
+    accountNumber: '12345678',
+    reference: 'TF230204212323',
+    transactionDateTime: '2023-02-04 18:25:00',
+    currency: 'VND',
+    paymentLinkId: '124c33293c43417ab7879e14c8d9eb18',
+    code: '00',
+    desc: 'Thành công',
+    counterAccountBankId: '',
+    counterAccountBankName: '',
+    counterAccountName: '',
+    counterAccountNumber: '',
+    virtualAccountName: '',
+    virtualAccountNumber: '',
+  },
+  signature: '8d8640d802576397a1ce45ebda7f835055768ac7ad2e0bfb77f9b8f12cca4c7f',
+});
+```
+
+For more information about webhooks, see [the API doc](https://payos.vn/docs/api/#tag/payment-webhook/operation/payment-webhook).
+
+### Handling errors
+
+When the API return a non-success status code (i.e, 4xx or 5xx response) or non-success code data (any code except '00'), a class `APIError` or its subclass will be thrown:
+
+```ts
+await payos
+  .request({
+    endpoint: '/not-found',
+    method: 'GET',
+  })
+  .catch((err) => {
+    if (err instanceof APIError) {
+      console.log(err.name); // NotFoundError
+      console.log(err.message); // HTTP 404, {}
+      console.log(err.status); // 404
+      console.log(err.headers); // {server: "nginx",...}
+      console.log(err.code); // undefined
+      console.log(err.desc); // undefined
+    } else {
+      throw err;
+    }
+  });
+```
+
+### Auto pagination
+
+List method in the payOS Merchant API are paginated, You can use the `for await ... of` syntax to iterate though items across all pages:
+
+```ts
+const allPayouts = [];
+const payoutPage = await payos.payouts.list({ limit: 3 });
+for await (const payout of payoutPage) {
+  allPayouts.push(payout);
+}
+console.log(allPayouts);
+// or
+const payouts = await payoutPage.toArray();
+console.log(payouts);
+```
+
+Or you can request single page at a time:
+
+```ts
+let page = await payos.payouts.list({
+  limit: 3,
+});
+for (const payout of page.data) {
+  console.log(payout);
+}
+
+while (page.hasNextPage()) {
+  page = await page.getNextPage();
 }
 ```
-Return data type:
-```javascript
-{
-  bin: string;
-  accountNumber: string;
-  accountName: string;
-  amount: number;
-  description: string;
-  orderCode: number;
-  currency: string;
-  paymentLinkId: string;
-  status: string;
-  expiredAt: number;
-  checkoutUrl: string;
-  qrCode: string
-}
+
+### Advanced usage
+
+#### Custom configuration
+
+You can customize the PayOS client with various options:
+
+```ts
+const payos = new PayOS({
+  clientId: process.env.PAYOS_CLIENT_ID,
+  apiKey: process.env.PAYOS_API_KEY,
+  checksumKey: process.env.PAYOS_CHECKSUM_KEY,
+  partnerCode: process.env.PAYOS_PARTNER_CODE, // Optional partner code
+  baseURL: 'https://api-merchant.payos.vn', // Custom base URL
+  timeout: 30000, // Request timeout in milliseconds (default: 60000)
+  maxRetries: 3, // Maximum retry attempts (default: 2)
+  logLevel: 'info', // Log level: 'off', 'error', 'warn', 'info', 'debug'
+  logger: console, // Custom logger implementation
+  fetchOptions: {
+    // Additional fetch options
+    headers: {
+      'Custom-Header': 'value',
+    },
+  },
+});
 ```
 
-Example:
-```javascript
-const requestData = {
-    orderCode: 234234,
-    amount: 1000,
-    description: "Thanh toan don hang",
-    items: [
-      {
-        name: "Mì tôm hảo hảo ly",
-        quantity: 1,
-        price: 1000,
-      }
-    ],
-    cancelUrl: "https://your-domain.com",
-    returnUrl: "https://your-domain.com",
-};
-const paymentLinkData = await payos.createPaymentLink(requestData);
+#### Custom fetch implementation
+
+You can provide a custom fetch implementation:
+
+```ts
+import fetch from 'node-fetch'; // or any other fetch implementation
+
+const payos = new PayOS({
+  clientId: process.env.PAYOS_CLIENT_ID,
+  apiKey: process.env.PAYOS_API_KEY,
+  checksumKey: process.env.PAYOS_CHECKSUM_KEY,
+  fetch: fetch as any, // Custom fetch function
+});
 ```
 
-* **getPaymentLinkInformation**
+#### Request-level options
 
-Get payment information of an order that has created a payment link.
+You can override client-level settings for individual requests:
 
-Syntax:
-```javascript
-await payos.getPaymentLinkInformation(id);
+```ts
+const paymentLink = await payos.paymentRequests.create(
+  {
+    orderCode: 123,
+    amount: 2000,
+    description: 'payment',
+    returnUrl: 'https://your-url.com',
+    cancelUrl: 'https://your-url.com',
+  },
+  {
+    maxRetries: 5, // Override default max retries
+    timeout: 10000, // Override default timeout
+    signal: abortController.signal, // AbortSignal for request cancellation
+  },
+);
 ```
 
-Parameters:
-* `id`: Store order code (`orderCode`) or payOS payment link id (`paymentLinkId`). Type of `id` is string or number.
+#### Logging and debugging
 
+The log level can be configured in two ways:
 
-Return data type:
-```javascript
-{
-  id: string;
-  orderCode: number;
-  amount: number;
-  amountPaid: number;
-  amountRemaining: number;
-  status: string;
-  createdAt: string;
-  transactions: TransactionType[];
-  cancellationReason: string | null;
-  canceledAt: string | null;
-}
+1. Via the `PAYOS_LOG` environment variable.
+2. Using the `logLevel` client option (override the environment if set).
+
+By default, this library logs to `globalThis.console`. You can also provide a custom logger. If your logger doesn't work, please open an issue.
+
+```ts
+import { createLogger } from 'winston';
+
+const payos = new PayOS({
+  clientId: process.env.PAYOS_CLIENT_ID,
+  apiKey: process.env.PAYOS_API_KEY,
+  checksumKey: process.env.PAYOS_CHECKSUM_KEY,
+  logLevel: 'debug', // Enable debug logging
+  logger: createLogger({
+    level: 'debug',
+    transports: [new transports.Console()],
+  }),
+});
 ```
 
-Transaction type:
-```javascript
-{
-  reference: string;
-  amount: number;
-  accountNumber: string;
-  description: string;
-  transactionDateTime: string;
-  virtualAccountName: string | null;
-  virtualAccountNumber: string | null;
-  counterAccountBankId: string | null;
-  counterAccountBankName: string | null;
-  counterAccountName: string | null;
-  counterAccountNumber: string | null
-}
-```
-Example:
-```javascript
-const paymentLinkInfo = await payos.getPaymentLinkInformation(1234);
-```
+#### Direct API access
 
-* **cancelPaymentLink**
+For advanced use cases, you can make direct API calls:
 
-Cancel the payment link of the order.
+```ts
+// GET request
+const response = await payos.get('/v2/payment-requests');
 
-Syntax:
-```javascript
-await payos.cancelPaymentLink(orderCode, cancellationReason); 
-```
+// POST request
+const response = await payos.post('/v2/payment-requests', {
+  body: {
+    orderCode: 123,
+    amount: 2000,
+    description: 'payment',
+    returnUrl: 'https://your-url.com',
+    cancelUrl: 'https://your-url.com',
+  },
+});
 
-Parameters:
-* `id`: Store order code (`orderCode`) or payOS payment link id (`paymentLinkId`). Type of `id` is string or number.
-
-* `cancellationReason`: Reason for canceling payment link (optional).
-
-Return data type:
-```javascript
-{
-  id: string;
-  orderCode: number;
-  amount: number;
-  amountPaid: number;
-  amountRemaining: number;
-  status: string;
-  createdAt: string;
-  transactions: TransactionType[];
-  cancellationReason: string | null;
-  canceledAt: string | null;
-}
-```
-Example:
-
-```javascript
-const orderCode = 123;
-const cancellationReason = "reason";
-
-const cancelledPaymentLinkInfo = await payos.cancelPaymentLink(orderCode, cancellationReason); 
-
-// If you want to cancel the payment link without reason:
-const cancelledPaymentLinkInfo = await payos.cancelPaymentLink(orderCode); 
-```
-
-
-* **confirmWebhook**
-
-Validate the Webhook URL of a payment channel and add or update the Webhook URL for that Payment Channel if successful.
-
-Syntax:
-
-```javascript
-await payos.confirmWebhook("https://your-webhook-url/");
-```
-
-* **verifyPaymentWebhookData**
-
-Verify data received via webhook after payment.
-
-Syntax:
-
-```javascript
-const webhookBody = req.body;
-const paymentData = payos.verifyPaymentWebhookData(webhookBody);
-```
-
-Return data type:
-```javascript
-{
-  orderCode: number;
-  amount: number;
-  description: string;
-  accountNumber: string;
-  reference: string;
-  transactionDateTime: string;
-  currency: string;
-  paymentLinkId: string;
-  code: string;
-  desc: string;
-  counterAccountBankId?: string | null;
-  counterAccountBankName?: string | null;
-  counterAccountName?: string | null;
-  counterAccountNumber?: string | null;
-  virtualAccountName?: string | null;
-  virtualAccountNumber?: string | null;
-}
+// With custom options
+const response = await payos.request({
+  method: 'POST',
+  path: '/v2/payment-requests',
+  body: requestData,
+  maxRetries: 3,
+  timeout: 15000,
+});
 ```

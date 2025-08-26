@@ -1,0 +1,9 @@
+# This file is written to be whitelist instead of black list.
+# Start by ignoring everything, then add back the files we want to included in the final NPM package.
+*
+
+# These files are allowed.
+!/README.md
+!/CHANGELOG.md
+!/package.json
+!/lib/**/*
