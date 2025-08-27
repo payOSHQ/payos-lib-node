@@ -1,0 +1,35 @@
+name: Publish to NPM and Create Release
+
+on:
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+'
+      - 'v[0-9]+.[0-9]+.[0-9]+-*'
+
+jobs:
+  publish-and-release:
+    runs-on: ubuntu-latest
+
+    permissions:
+      id-token: write # Required for provenance
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Make publish script executable
+        run: chmod +x scripts/publish-npm
+
+      - name: Publish to NPM
+        run: ./scripts/publish-npm
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}

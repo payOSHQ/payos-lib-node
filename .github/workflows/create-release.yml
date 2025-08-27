@@ -1,0 +1,85 @@
+name: Create Github Release
+
+on:
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+'
+      - 'v[0-9]+.[0-9]+.[0-9]+-*'
+
+jobs:
+  create-release:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Extract version information
+        id: version_info
+        run: |
+          VERSION="${{ github.ref_name }}"
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+          # Check if current version is pre-release (e.g. alpha / beta / rc)
+          if [[ "$VERSION" =~ -([a-zA-Z]+) ]]; then
+            echo "is_prerelease=true" >> $GITHUB_OUTPUT
+            echo "prerelease_tag=${BASH_REMATCH[1]}" >> $GITHUB_OUTPUT
+            echo "release_name=$VERSION" >> $GITHUB_OUTPUT
+          else
+            echo "is_prerelease=false" >> $GITHUB_OUTPUT
+            echo "prerelease_tag=" >> $GITHUB_OUTPUT
+            echo "release_name=$VERSION" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Extract changelog content
+        id: changelog
+        run: |
+          # https://medium.com/%40usman_qb/from-git-tag-to-github-release-automating-changelog-extraction-9cfcad1b13c4
+          VERSION="${{ github.ref_name }}"
+          # Remove 'v' prefix if it exists for matching changelog
+          VERSION_NUMBER="${VERSION#v}"
+
+          # Extract content between the version header and the next version header
+          awk -v version="$VERSION_NUMBER" '
+            BEGIN { found=0; print_content=0 }
+            /^## / {
+              if (found && print_content) {
+                exit
+              }
+              if ($0 ~ version) {
+                found=1
+                print_content=1
+                next
+              }
+            }
+            found && print_content && !/^## / {
+              print $0
+            }
+          ' CHANGELOG.md > release_notes.md
+
+          # Check if we found any content
+          if [ ! -s release_notes.md ]; then
+            echo "See [CHANGELOG.md](./CHANGELOG.md) for details." >> release_notes.md
+          fi
+
+      - name: Create Github Release
+        id: create_release
+        run: |
+          if [ "${{ steps.version_info.outputs.is_prerelease }}" = "true" ]; then
+            echo "Create release for version ${{ github.ref_name }} (Pre-release)"
+            gh release create "${{ steps.version_info.outputs.version }}" \
+              --title "${{ steps.version_info.outputs.release_name }}" \
+              --notes-file release_notes.md \
+              --prerelease
+          else
+            echo "Create release for version ${{ github.ref_name }}"
+            gh release create "${{ steps.version_info.outputs.version }}" \
+              --title "${{ steps.version_info.outputs.release_name }}" \
+              --notes-file release_notes.md
+          fi
+          echo "Create release successfully"
+        env:
+          GH_TOKEN: ${{secrets.GITHUB_TOKEN}}
