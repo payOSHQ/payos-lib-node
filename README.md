@@ -279,6 +279,6 @@ const signature = await payos.crypto.createSignatureFromObj(data, payos.checksum
 const signature = await payos.crypto.createSignature(payos.checksumKey, data);
 ```
 
-### Contributing
+## Contributing
 
 See [the contributing documentation](./CONTRIBUTING.md).
