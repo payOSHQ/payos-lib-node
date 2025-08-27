@@ -7,6 +7,10 @@ The payOS Node library provides convenient access to the payOS Merchant API from
 
 To learn how to use payOS Merchant API, checkout our [API Reference](https://payos.vn/docs/api) and [Documentation](https://payos.vn/docs). We also have some examples in [Examples](./examples/).
 
+## Requirements
+
+Node 20 or higher.
+
 ## Installation
 
 ```bash
