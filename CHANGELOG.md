@@ -21,3 +21,9 @@ This release migrate from `axios` to builtin `fetch`, change method name, change
 ### Documentation
 
 * **readme:** update readme
+
+## 2.0.1 (2025-08-27)
+
+## Bug fixes
+
+* **client:** export type for payout batch and payment request invoice
