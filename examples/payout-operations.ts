@@ -1,6 +1,5 @@
-import { APIError, PayOS } from '@payos/node';
+import { APIError, PayOS, PayoutBatchRequest } from '@payos/node';
 import 'dotenv/config';
-import { PayoutBatchRequest } from '../lib/resources/v1/payouts/batch';
 
 /**
  * Example demonstrating payout operations.
