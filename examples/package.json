@@ -1,0 +1,19 @@
+{
+  "name": "payos-examples",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "tsn": "ts-node"
+  },
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@payos/node": "file:..",
+    "dotenv": "^17.2.1"
+  },
+  "devDependencies": {
+    "ts-node": "^10.9.2"
+  }
+}
