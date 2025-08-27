@@ -25,8 +25,8 @@ export class Webhooks extends APIResource {
       const data = await this._client.post<ConfirmWebhookResponse, ConfirmWebhookRequest>(
         '/confirm-webhook',
         {
-          ...options,
           body: { webhookUrl },
+          ...options,
         },
       );
 

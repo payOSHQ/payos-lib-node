@@ -13,6 +13,9 @@ To learn how to use payOS Merchant API, checkout our [API Reference](https://pay
 npm install @payos/node
 ```
 
+> [!IMPORTANT]
+> If update from v1, check [Migration guide](./MIGRATION.md) for detail migration.
+
 ## Usage
 
 ### Basic usage
@@ -251,3 +254,27 @@ const response = await payos.request({
   timeout: 15000,
 });
 ```
+
+#### Signature
+
+The signature can be manually created by `PayOS.crypto`:
+
+```ts
+// for create-payment-link signature
+const signature = await payos.crypto.createSignatureOfPaymentRequest(data, payos.checksumKey);
+// of
+const signature = await payos.crypto.createSignatureFromObj(
+  { amount, cancelUrl, description, orderCode, returnUrl },
+  payos.checksumKey,
+);
+
+// for payment-requests and webhook signature
+const signature = await payos.crypto.createSignatureFromObj(data, payos.checksumKey);
+
+// for payouts signature
+const signature = await payos.crypto.createSignature(payos.checksumKey, data);
+```
+
+### Contributing
+
+See [the contributing documentation](./CONTRIBUTING.md).

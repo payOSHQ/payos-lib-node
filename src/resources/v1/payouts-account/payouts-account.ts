@@ -11,8 +11,8 @@ export class PayoutsAccount extends APIResource {
    */
   async balance(options?: RequestOptions): Promise<PayoutAccountInfo> {
     const data = await this._client.get<PayoutAccountInfo>(`/v1/payouts-account/balance`, {
-      ...options,
       signatureOpts: { response: 'header' },
+      ...options,
     });
 
     return data;

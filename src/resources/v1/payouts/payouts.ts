@@ -20,12 +20,12 @@ export class Payouts extends APIResource {
     options?: RequestOptions<PayoutRequest>,
   ): Promise<Payout> {
     const data = await this._client.post<Payout, PayoutRequest>('/v1/payouts/', {
-      ...options,
       body: payoutData,
       signatureOpts: { response: 'header', request: 'header' },
       headers: {
         'x-idempotency-key': idempotencyKey,
       },
+      ...options,
     });
 
     return data;
@@ -40,8 +40,8 @@ export class Payouts extends APIResource {
    */
   async get(payoutId: string, options?: RequestOptions): Promise<Payout> {
     const data = await this._client.get<Payout>(`/v1/payouts/${payoutId}`, {
-      ...options,
       signatureOpts: { response: 'header' },
+      ...options,
     });
 
     return data;
@@ -61,9 +61,9 @@ export class Payouts extends APIResource {
     const data = await this._client.post<EstimateCredit, PayoutRequest | PayoutBatchRequest>(
       '/v1/payouts/estimate-credit',
       {
-        ...options,
         body: payoutData,
         signatureOpts: { request: 'header' },
+        ...options,
       },
     );
 
@@ -94,11 +94,11 @@ export class Payouts extends APIResource {
     });
 
     const finalOptions: FinalRequestOptions = {
-      ...options,
       path: '/v1/payouts',
       method: 'GET',
       query: processedParams,
       signatureOpts: { response: 'header' },
+      ...options,
     };
 
     const data = await this._client.request<PayoutListResponse>(finalOptions);
@@ -130,11 +130,11 @@ export type PayoutApprovalState =
   | 'COMPLETED';
 
 export type PayoutRequest = {
-  reference_id: string;
+  referenceId: string;
   amount: number;
   description: string;
-  to_bin: string;
-  to_account_number: string;
+  toBin: string;
+  toAccountNumber: string;
   category?: string[];
 };
 

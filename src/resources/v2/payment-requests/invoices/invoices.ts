@@ -14,8 +14,8 @@ export class Invoices extends APIResource {
   async get(params: InvoiceRetrieveParams, options?: RequestOptions): Promise<InvoicesInfo> {
     const { paymentLinkId } = params;
     const data = await this._client.get<InvoicesInfo>(`/v2/payment-requests/${paymentLinkId}/invoices`, {
-      ...options,
       signatureOpts: { response: 'body' },
+      ...options,
     });
 
     return data;
@@ -37,9 +37,9 @@ export class Invoices extends APIResource {
   ): Promise<FileDownloadResponse> {
     const { paymentLinkId } = params;
     const fileResponse = await this._client.downloadFile({
-      ...options,
       path: `/v2/payment-requests/${paymentLinkId}/invoices/${invoiceId}/download`,
       method: 'GET',
+      ...options,
     });
 
     return fileResponse;
