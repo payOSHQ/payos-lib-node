@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.0.1 (2025-08-27)
+
+## Bug fixes
+
+* **client:** export type for payout batch and payment request invoice
+
 ## 2.0.0 (2025-08-27)
 
 This release migrate from `axios` to builtin `fetch`, change method name, change type name, and add payout related methods. For full migrate guild see [MIGRATION.md](./MIGRATION.md).
@@ -21,9 +27,3 @@ This release migrate from `axios` to builtin `fetch`, change method name, change
 ### Documentation
 
 * **readme:** update readme
-
-## 2.0.1 (2025-08-27)
-
-## Bug fixes
-
-* **client:** export type for payout batch and payment request invoice
