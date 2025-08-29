@@ -49,8 +49,8 @@ export class Invoices extends APIResource {
 export type Invoice = {
   invoiceId: string;
   invoiceNumber: string | null;
-  invoiceTimestamp: number | null;
-  invoiceDateTime: Date | null;
+  issuedTimestamp: number | null;
+  issuedDatetime: Date | null;
   transactionId: string | null;
   reservationCode: string | null;
   codeOfTax: string | null;
