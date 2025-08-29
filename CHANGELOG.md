@@ -1,8 +1,14 @@
 # Changelog
 
+## 2.0.2 (2025-08-29)
+
+### Bug fixes
+
+* **client:** renamed fields of invoices endpoint
+
 ## 2.0.1 (2025-08-27)
 
-## Bug fixes
+### Bug fixes
 
 * **client:** export type for payout batch and payment request invoice
 
