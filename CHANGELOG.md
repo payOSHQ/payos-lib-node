@@ -1,5 +1,15 @@
 # Changelog
 
+## 2.0.3 (2025-09-11)
+
+### Features
+
+* **client:** add orderCode and paymentLinkId as params for method `PayOS.paymentRequests.invoices.get` and `PayOS.paymentRequests.invoices.download`
+
+### Bug fixes
+
+* **client:** correct version of SDK in user-agent info
+
 ## 2.0.2 (2025-08-29)
 
 ### Bug fixes
