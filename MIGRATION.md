@@ -86,7 +86,7 @@ const webhookDataVerified: WebhookData = await payos.webhooks.verify(webhookBody
 
 ### Handling errors
 
-The library now throw client error as `PayOS.PayOSError`, API related errors as `PayOS.APIError`, webhook related errors as `PayOS.WebhookError` and signature related errors as `PayOS.SignatureError` instead of throw `PayOSError` for related API errors and `Error` for other errors.
+The library now throw client error as `PayOS.PayOSError`, API related errors as `PayOS.APIError`, webhook related errors as `PayOS.WebhookError` and signature related errors as `PayOS.InvalidSignatureError` instead of throw `PayOSError` for related API errors and `Error` for other errors.
 
 ```ts
 // before

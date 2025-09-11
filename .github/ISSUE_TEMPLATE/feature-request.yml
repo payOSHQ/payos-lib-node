@@ -1,0 +1,48 @@
+name: Feature Request
+description: Suggest a new feature or enhancement for the payOS Node.js SDK
+title: '[FEATURE] '
+labels: ['enhancement', 'triage']
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for suggesting a new feature! Your input helps us improve the payOS Node.js SDK.
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: A brief summary of the feature request.
+      placeholder: What feature would you like to see?
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem/Use Case
+      description: Describe the problem this feature would solve or the use case it would enable.
+      placeholder: |
+        I'm always frustrated when...
+        I would like to be able to...
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed Solution
+      description: Describe your proposed solution or implementation.
+      placeholder: How do you think this should work?
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternative Solutions
+      description: Describe any alternative solutions or features you've considered.
+      placeholder: Have you considered any alternatives?
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional Context
+      description: Add any other context, screenshots, or examples about the feature request here.
+      placeholder: Any additional information that might help us understand your request.

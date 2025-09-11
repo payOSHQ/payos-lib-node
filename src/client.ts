@@ -9,9 +9,9 @@ import * as Errors from './core/error';
 import { castToError } from './utils/error';
 import { safeJSON, validatePositiveInteger } from './utils/values';
 import { FinalRequestOptions, HeadersLike, HTTPMethod, RequestOptions } from './core/request-options';
+import { VERSION } from './version';
 
 const BASE_URL = 'https://api-merchant.payos.vn';
-const VERSION = '2.0.0-rc.1';
 
 export interface PayOSOptions {
   /**
