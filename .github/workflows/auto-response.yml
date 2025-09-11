@@ -1,0 +1,35 @@
+name: Auto Response to Issues
+
+on:
+  issues:
+    types: [opened]
+
+jobs:
+  auto-response:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Post auto-response
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## 🤖 Auto Response
+
+            Hello! 👋
+
+            Thank you for reaching out. This repository is specifically for the payOS Node.js SDK library. If your issue is not related to the SDK itself (such as general payOS API questions, account issues, or integration problems), please contact our support team directly:
+
+            📧 **Email**: support@payos.vn
+
+            Our support team will be happy to assist you with any payOS-related questions or issues that aren't specifically about this SDK library.
+
+            If this issue **is** related to the payOS Node.js SDK, please provide more details about:
+            - The specific error or behavior you're experiencing
+            - Your environment (Node.js version, OS, SDK version)
+            - Code snippets that reproduce the issue
+
+            Thank you for your understanding! 🙏`
+            })
