@@ -1,0 +1,609 @@
+[
+  {
+    "caseName": "create payment link full fields",
+    "payload": {
+      "amount": 3300,
+      "description": "ABC456",
+      "orderCode": 0,
+      "cancelUrl": "http://localhost",
+      "returnUrl": "http://localhost",
+      "buyerName": "buyer name",
+      "buyerCompanyName": "company name",
+      "buyerTaxCode": "0316794479",
+      "buyerEmail": "buyer@email.com",
+      "buyerPhone": "buyer not provide phone",
+      "buyerAddress": "buyer address",
+      "items": [
+        { "name": "product name", "quantity": 1, "price": 1000, "unit": "product unit", "taxPercentage": 10 },
+        { "name": "product name", "quantity": 1, "price": 2000, "unit": "product unit", "taxPercentage": 10 }
+      ],
+      "invoice": { "buyerNotGetInvoice": false, "taxPercentage": 10 },
+      "signature": ""
+    },
+    "expect": "189864813370cdf819974dc3f63c3a93a7e7af0a0d10b21344b14e4f7358999b",
+    "type": "create-payment-link"
+  },
+  {
+    "caseName": "create payment link with Vietnamese description",
+    "payload": {
+      "amount": 2000,
+      "description": "Thanh toán đơn hàng",
+      "orderCode": 0,
+      "cancelUrl": "http://localhost",
+      "returnUrl": "http://localhost"
+    },
+    "expect": "d8b7b0e5d19edfe7b1f53dedeb8d1c7c2b62fabd7eb320dbc514c58f13e9e2c5",
+    "type": "create-payment-link"
+  },
+  {
+    "caseName": "paid payment link with 1 transaction",
+    "payload": {
+      "id": "payment-link-id",
+      "orderCode": 0,
+      "amount": 2000,
+      "amountPaid": 2000,
+      "amountRemaining": 0,
+      "status": "PAID",
+      "createdAt": "2025-12-12T09:00:00+07:00",
+      "transactions": [
+        {
+          "accountNumber": "0123456789",
+          "amount": 2000,
+          "counterAccountBankId": "01202001",
+          "counterAccountBankName": null,
+          "counterAccountName": "NGUYEN VAN A",
+          "counterAccountNumber": "9876543210",
+          "description": "TRANSACTION DESCRIPTION",
+          "reference": "FT-REFERENCE",
+          "transactionDateTime": "2025-12-12T09:00:00+07:00",
+          "virtualAccountName": null,
+          "virtualAccountNumber": null
+        }
+      ],
+      "canceledAt": null,
+      "cancellationReason": null
+    },
+    "expect": "6af5e2c9a28256c140169ed624114b43295915d7b6e2fa6278b17a7c43aadefd",
+    "type": "body"
+  },
+  {
+    "caseName": "paid payment link with many transactions",
+    "payload": {
+      "id": "payment-link-id",
+      "orderCode": 0,
+      "amount": 2000,
+      "amountPaid": 2000,
+      "amountRemaining": 0,
+      "status": "PAID",
+      "createdAt": "2025-12-12T09:00:00+07:00",
+      "transactions": [
+        {
+          "accountNumber": "0123456789",
+          "amount": 2000,
+          "counterAccountBankId": "01202001",
+          "counterAccountBankName": null,
+          "counterAccountName": "NGUYEN VAN A",
+          "counterAccountNumber": "9876543210",
+          "description": "TRANSACTION DESCRIPTION",
+          "reference": "FT-REFERENCE",
+          "transactionDateTime": "2025-12-12T09:00:00+07:00",
+          "virtualAccountName": null,
+          "virtualAccountNumber": null
+        },
+        {
+          "accountNumber": "0123456789",
+          "amount": 2000,
+          "counterAccountBankId": "01202001",
+          "counterAccountBankName": null,
+          "counterAccountName": "NGUYEN VAN A",
+          "counterAccountNumber": "9876543210",
+          "description": "TRANSACTION DESCRIPTION",
+          "reference": "FT-REFERENCE",
+          "transactionDateTime": "2025-12-12T09:00:00+07:00",
+          "virtualAccountName": null,
+          "virtualAccountNumber": null
+        }
+      ],
+      "canceledAt": null,
+      "cancellationReason": null
+    },
+    "expect": "04ebbe221724d2b848c3f39b2db3311cc554167f55bd2fe2cb7b86b6bfdeadaa",
+    "type": "body"
+  },
+  {
+    "caseName": "pending payment link",
+    "payload": {
+      "id": "payment-link-id",
+      "orderCode": 0,
+      "amount": 2000,
+      "amountPaid": 0,
+      "amountRemaining": 2000,
+      "status": "PENDING",
+      "createdAt": "2025-12-12T09:00:00+07:00",
+      "transactions": [],
+      "canceledAt": null,
+      "cancellationReason": null
+    },
+    "expect": "33093364158b143baa9ecd2e705d9a2a5a5d391a3cab7cb0a371588b3731368f",
+    "type": "body"
+  },
+  {
+    "caseName": "expired payment link",
+    "payload": {
+      "id": "payment-link-id",
+      "orderCode": 0,
+      "amount": 2000,
+      "amountPaid": 0,
+      "amountRemaining": 2000,
+      "status": "EXPIRED",
+      "createdAt": "2025-12-12T09:00:00+07:00",
+      "transactions": [],
+      "canceledAt": null,
+      "cancellationReason": null
+    },
+    "expect": "e07e6e463904beb38da38192b4de79beb4bd20b0435d3920389beb6abeb6c48e",
+    "type": "body"
+  },
+  {
+    "caseName": "expired payment link",
+    "payload": {
+      "id": "payment-link-id",
+      "orderCode": 0,
+      "amount": 2000,
+      "amountPaid": 0,
+      "amountRemaining": 2000,
+      "status": "CANCELLED",
+      "createdAt": "2025-12-12T09:00:00+07:00",
+      "transactions": [],
+      "canceledAt": "2025-12-12T09:00:00+07:00",
+      "cancellationReason": "cancel reason"
+    },
+    "expect": "10c181c89bda5b855327e3e16494b9e8409e6b85a2a90f20177af99f8b12eaa9",
+    "type": "body"
+  },
+  {
+    "caseName": "invoice information with 1 invoice",
+    "payload": {
+      "invoices": [
+        {
+          "invoiceId": "invoice-id",
+          "invoiceNumber": "invoiceNo",
+          "issuedTimestamp": 1765504800,
+          "issuedDatetime": "2025-12-12T09:00:00+07:00",
+          "transactionId": "transactionId",
+          "reservationCode": "reservationCode",
+          "codeOfTax": "codeOfTax"
+        }
+      ]
+    },
+    "expect": "1794b09bb47d4d6f2e3d7f0d261059012e0d8a055e882b75c9855ec249088f0f",
+    "type": "body"
+  },
+  {
+    "caseName": "invoice information with many invoices",
+    "payload": {
+      "invoices": [
+        {
+          "invoiceId": "invoice-id",
+          "invoiceNumber": "invoiceNo",
+          "issuedTimestamp": 1765504800,
+          "issuedDatetime": "2025-12-12T09:00:00+07:00",
+          "transactionId": "transactionId",
+          "reservationCode": "reservationCode",
+          "codeOfTax": "codeOfTax"
+        },
+        {
+          "invoiceId": "invoice-id",
+          "invoiceNumber": null,
+          "issuedTimestamp": null,
+          "issuedDatetime": null,
+          "transactionId": null,
+          "reservationCode": null,
+          "codeOfTax": null
+        }
+      ]
+    },
+    "expect": "8ceca4558787d5ec58b24caaf5aaa7693df83242efbb28e7b70cf3391f3a1138",
+    "type": "body"
+  },
+  {
+    "caseName": "webhook",
+    "payload": {
+      "accountNumber": "0123456789",
+      "amount": 20000,
+      "description": "thanh toan",
+      "reference": "FT-REFERENCE",
+      "transactionDateTime": "2025-12-12 09:00:00",
+      "virtualAccountNumber": "",
+      "counterAccountBankId": "01202001",
+      "counterAccountBankName": "",
+      "counterAccountName": "NGUYEN VAN A",
+      "counterAccountNumber": "9876543210",
+      "virtualAccountName": "",
+      "currency": "VND",
+      "orderCode": 0,
+      "paymentLinkId": "payment-link-id",
+      "code": "00",
+      "desc": "success"
+    },
+    "expect": "302b3becca1672dff99daafae2965f40e48ea3ca39453e4bf37fbcc26807a0e8",
+    "type": "body"
+  },
+  {
+    "caseName": "create batch payout with 1 payout",
+    "payload": {
+      "referenceId": "referenceId",
+      "category": ["salary"],
+      "validateDestination": true,
+      "payouts": [
+        {
+          "referenceId": "referenceId",
+          "amount": 2000,
+          "description": "batch payout",
+          "toBin": "970422",
+          "toAccountNumber": "0123456789"
+        }
+      ]
+    },
+    "expect": "4743e26db6a79007664773a058c4de63e4c246a4264157a17e10793007e6112f",
+    "type": "header"
+  },
+  {
+    "caseName": "create batch payout with 1 payout and no category",
+    "payload": {
+      "referenceId": "referenceId",
+      "category": [],
+      "validateDestination": true,
+      "payouts": [
+        {
+          "referenceId": "referenceId",
+          "amount": 2000,
+          "description": "batch payout",
+          "toBin": "970422",
+          "toAccountNumber": "0123456789"
+        }
+      ]
+    },
+    "expect": "6a4d3425942e3ef87fccab4cb8aee3e9ecba8b8919afe65b7abb16fa04f572b7",
+    "type": "header"
+  },
+  {
+    "caseName": "create batch payout with many payouts",
+    "payload": {
+      "referenceId": "",
+      "category": ["salary"],
+      "validateDestination": true,
+      "payouts": [
+        {
+          "referenceId": "referenceId",
+          "amount": 2000,
+          "description": "batch payout",
+          "toBin": "970422",
+          "toAccountNumber": "0123456789"
+        },
+        {
+          "referenceId": "referenceId",
+          "amount": 2000,
+          "description": "batch payout",
+          "toBin": "970422",
+          "toAccountNumber": "0123456789"
+        },
+        {
+          "referenceId": "referenceId",
+          "amount": 2000,
+          "description": "batch payout",
+          "toBin": "970422",
+          "toAccountNumber": "0123456789"
+        }
+      ]
+    },
+    "expect": "9445a3eda996db30c493005439cbe40f7de21263984f3922a24e80df637c428c",
+    "type": "header"
+  },
+  {
+    "caseName": "create single payout",
+    "payload": {
+      "referenceId": "referenceId",
+      "amount": 2000,
+      "description": "payout",
+      "toBin": "970422",
+      "toAccountNumber": "0123456789",
+      "category": ["salary", "hoa"]
+    },
+    "expect": "1bb7686b766bb5d164227a7d4d2e4d4ad241e4a7a91f61c75674c0af9cf90fca",
+    "type": "header"
+  },
+  {
+    "caseName": "create single payout with no category",
+    "payload": {
+      "referenceId": "referenceId",
+      "amount": 2000,
+      "description": "payout",
+      "toBin": "970422",
+      "toAccountNumber": "0123456789",
+      "category": []
+    },
+    "expect": "40af04e4b404ef9ad67d034c2d8b4c158c9aad965afe87ab37d456526a949abb",
+    "type": "header"
+  },
+  {
+    "caseName": "get payout with single transaction",
+    "payload": {
+      "id": "batchId",
+      "referenceId": "referenceId",
+      "transactions": [
+        {
+          "id": "batchTxnId",
+          "referenceId": "referenceId",
+          "amount": 2000,
+          "description": "batch payout",
+          "toBin": "970422",
+          "toAccountNumber": "0123456789",
+          "toAccountName": "NGUYEN VAN A",
+          "reference": "FT-REFERENCE",
+          "transactionDatetime": "2025-12-12T09:00:00+07:00",
+          "errorMessage": null,
+          "errorCode": null,
+          "state": "SUCCEEDED"
+        }
+      ],
+      "category": ["salary"],
+      "approvalState": "COMPLETED",
+      "createdAt": "2025-12-12T09:00:00+07:00"
+    },
+    "expect": "1a8cd11e432b0fe7324e8c816f53e8090a737668ebd96726dfcca802578a6072",
+    "type": "header"
+  },
+  {
+    "caseName": "get payout with single transaction and no category",
+    "payload": {
+      "id": "batchId",
+      "referenceId": "referenceId",
+      "transactions": [
+        {
+          "id": "batchTxnId",
+          "referenceId": "referenceId",
+          "amount": 2000,
+          "description": "batch payout",
+          "toBin": "970422",
+          "toAccountNumber": "0123456789",
+          "toAccountName": "NGUYEN VAN A",
+          "reference": "FT-REFERENCE",
+          "transactionDatetime": "2025-12-12T09:00:00+07:00",
+          "errorMessage": null,
+          "errorCode": null,
+          "state": "SUCCEEDED"
+        }
+      ],
+      "category": null,
+      "approvalState": "COMPLETED",
+      "createdAt": "2025-12-12T09:00:00+07:00"
+    },
+    "expect": "2d7196c3521883f9aeb858393e11fff0542c0fbed14c1d8b8710e2652a83e2e1",
+    "type": "header"
+  },
+  {
+    "caseName": "get payout with single failed transaction",
+    "payload": {
+      "id": "batchId",
+      "referenceId": "referenceId",
+      "transactions": [
+        {
+          "id": "batchTxnId",
+          "referenceId": "referenceId",
+          "amount": 2000,
+          "description": "batch payout",
+          "toBin": "970422",
+          "toAccountNumber": "0123456789",
+          "toAccountName": "NGUYEN VAN A",
+          "reference": null,
+          "transactionDatetime": null,
+          "errorMessage": "error message",
+          "errorCode": "error code",
+          "state": "FAILED"
+        }
+      ],
+      "category": null,
+      "approvalState": "FAILED",
+      "createdAt": "2025-12-12T09:00:00+07:00"
+    },
+    "expect": "55ae218e7ad03a3a70067111cbe82e561be8994df037a990e56d20cca88c252e",
+    "type": "header"
+  },
+  {
+    "caseName": "get payout with multiple transactions",
+    "payload": {
+      "id": "batchId",
+      "referenceId": "referenceId",
+      "transactions": [
+        {
+          "id": "batchTxnId",
+          "referenceId": "referenceId",
+          "amount": 2000,
+          "description": "batch payout",
+          "toBin": "970422",
+          "toAccountNumber": "0123456789",
+          "toAccountName": "NGUYEN VAN A",
+          "reference": "FT-REFERENCE",
+          "transactionDatetime": "2025-12-12T09:00:00+07:00",
+          "errorMessage": null,
+          "errorCode": null,
+          "state": "SUCCEEDED"
+        },
+        {
+          "id": "batchTxnId",
+          "referenceId": "referenceId",
+          "amount": 2000,
+          "description": "batch payout",
+          "toBin": "970422",
+          "toAccountNumber": "0123456789",
+          "toAccountName": "NGUYEN VAN A",
+          "reference": "FT-REFERENCE",
+          "transactionDatetime": "2025-12-12T09:00:00+07:00",
+          "errorMessage": null,
+          "errorCode": null,
+          "state": "SUCCEEDED"
+        },
+        {
+          "id": "batchTxnId",
+          "referenceId": "referenceId",
+          "amount": 2000,
+          "description": "batch payout",
+          "toBin": "970422",
+          "toAccountNumber": "0123456789",
+          "toAccountName": "NGUYEN VAN A",
+          "reference": null,
+          "transactionDatetime": null,
+          "errorMessage": "error message",
+          "errorCode": "error code",
+          "state": "FAILED"
+        }
+      ],
+      "category": ["salary"],
+      "approvalState": "PARTIAL_COMPLETED",
+      "createdAt": "2025-12-12T09:00:00+07:00"
+    },
+    "expect": "6a0f439e3e144d0dc633921081507e09835031b000dff5e97ac0e90b0712abc5",
+    "type": "header"
+  },
+  {
+    "caseName": "get list payout",
+    "payload": {
+      "payouts": [
+        {
+          "id": "batchId",
+          "referenceId": "referenceId",
+          "transactions": [
+            {
+              "id": "batchTxnId",
+              "referenceId": "referenceId",
+              "amount": 2000,
+              "description": "batch payout",
+              "toBin": "970422",
+              "toAccountNumber": "0123456789",
+              "toAccountName": "NGUYEN VAN A",
+              "reference": "FT-REFERENCE",
+              "transactionDatetime": "2025-12-12T09:00:00+07:00",
+              "errorMessage": null,
+              "errorCode": null,
+              "state": "SUCCEEDED"
+            }
+          ],
+          "category": ["salary"],
+          "approvalState": "COMPLETED",
+          "createdAt": "2025-12-12T09:00:00+07:00"
+        }
+      ],
+      "pagination": { "limit": 10, "offset": 0, "total": 1, "count": 1, "hasMore": false }
+    },
+    "expect": "2f2f2f1cb5e4f12c65355af27506c79f78a764e1ee10d0ae3b17cc2a3d4bbe84",
+    "type": "header"
+  },
+  {
+    "caseName": "get list payout with many payouts",
+    "payload": {
+      "payouts": [
+        {
+          "id": "batchId",
+          "referenceId": "referenceId",
+          "transactions": [
+            {
+              "id": "batchTxnId",
+              "referenceId": "referenceId",
+              "amount": 2000,
+              "description": "batch payout",
+              "toBin": "970422",
+              "toAccountNumber": "0123456789",
+              "toAccountName": "NGUYEN VAN A",
+              "reference": "FT-REFERENCE",
+              "transactionDatetime": "2025-12-12T09:00:00+07:00",
+              "errorMessage": null,
+              "errorCode": null,
+              "state": "SUCCEEDED"
+            }
+          ],
+          "category": ["salary"],
+          "approvalState": "COMPLETED",
+          "createdAt": "2025-12-12T09:00:00+07:00"
+        },
+        {
+          "id": "batchId",
+          "referenceId": "referenceId",
+          "transactions": [
+            {
+              "id": "batchTxnId",
+              "referenceId": "referenceId",
+              "amount": 2000,
+              "description": "batch payout",
+              "toBin": "970422",
+              "toAccountNumber": "0123456789",
+              "toAccountName": "NGUYEN VAN A",
+              "reference": "FT-REFERENCE",
+              "transactionDatetime": "2025-12-12T09:00:00+07:00",
+              "errorMessage": null,
+              "errorCode": null,
+              "state": "SUCCEEDED"
+            },
+            {
+              "id": "batchTxnId",
+              "referenceId": "referenceId",
+              "amount": 2000,
+              "description": "batch payout",
+              "toBin": "970422",
+              "toAccountNumber": "0123456789",
+              "toAccountName": "NGUYEN VAN A",
+              "reference": "FT-REFERENCE",
+              "transactionDatetime": "2025-12-12T09:00:00+07:00",
+              "errorMessage": null,
+              "errorCode": null,
+              "state": "SUCCEEDED"
+            },
+            {
+              "id": "batchTxnId",
+              "referenceId": "referenceId",
+              "amount": 2000,
+              "description": "batch payout",
+              "toBin": "970422",
+              "toAccountNumber": "0123456789",
+              "toAccountName": "NGUYEN VAN A",
+              "reference": "FT-REFERENCE",
+              "transactionDatetime": "2025-12-12T09:00:00+07:00",
+              "errorMessage": null,
+              "errorCode": null,
+              "state": "SUCCEEDED"
+            }
+          ],
+          "category": ["salary"],
+          "approvalState": "COMPLETED",
+          "createdAt": "2025-12-12T09:00:00+07:00"
+        }
+      ],
+      "pagination": { "limit": 10, "offset": 0, "total": 2, "count": 2, "hasMore": false }
+    },
+    "expect": "6fc719c5b26bad51a06aaaca598a29cd36a6cafbbfb726897328b2cc9efb2832",
+    "type": "header"
+  },
+  {
+    "caseName": "get balance",
+    "payload": {
+      "accountNumber": "0123456789",
+      "accountName": "NGUYEN VAN A",
+      "balance": "5000000",
+      "currency": "VND"
+    },
+    "expect": "f08a586dd8b60fc704a9901d902dd572077d7a35b5499ec259ff67cfdf8477b5",
+    "type": "header"
+  },
+  {
+    "caseName": "header type empty string",
+    "payload": {},
+    "expect": "d9dd60ea06e1ee2dc960267c7a798f0c70307a4783ac0460d015772412c37938",
+    "type": "header"
+  },
+  {
+    "caseName": "body type empty string",
+    "payload": {},
+    "expect": "d9dd60ea06e1ee2dc960267c7a798f0c70307a4783ac0460d015772412c37938",
+    "type": "body"
+  }
+]
