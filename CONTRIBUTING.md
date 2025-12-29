@@ -21,11 +21,19 @@ npm run tsn <example>.ts
 
 ## Linting and formatting
 
-Thit repository uses [prettier](https://www.npmjs.com/package/prettier) and [eslint](https://www.npmjs.com/package/eslint) to format the code in the repository.
+This repository uses [prettier](https://www.npmjs.com/package/prettier) and [eslint](https://www.npmjs.com/package/eslint) to format the code in the repository.
 
 ```bash
 npm run lint
 npm run format
+```
+
+## Testing
+
+This repository uses [jest](https://www.npmjs.com/package/jest) to test.
+
+```bash
+npm test
 ```
 
 ## Publishing and release
