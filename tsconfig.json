@@ -12,6 +12,6 @@
     "allowSyntheticDefaultImports": true,
     "types": ["jest", "node"]
   },
-  "exclude": ["node_modules", "lib"],
-  "include": ["src", "tests"]
+  "exclude": ["node_modules", "lib", "tests"],
+  "include": ["src"]
 }
