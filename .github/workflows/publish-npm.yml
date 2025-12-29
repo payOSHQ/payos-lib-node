@@ -1,10 +1,12 @@
 name: Publish to NPM
 
 on:
-  push:
-    tags:
-      - 'v[0-9]+.[0-9]+.[0-9]+'
-      - 'v[0-9]+.[0-9]+.[0-9]+-*'
+  workflow_run:
+    workflows: ["Run Tests"]
+    types:
+      - completed
+    branches:
+      - '**'
   workflow_dispatch:
     inputs:
       tag:
@@ -19,16 +21,20 @@ permissions:
 jobs:
   publish-and-release:
     runs-on: ubuntu-latest
+    # Only run if tests passed and this is a tag push, or manual dispatch
+    if: |
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' && startsWith(github.event.workflow_run.head_branch, 'refs/tags/v'))
 
     permissions:
       id-token: write # Required for provenance
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
-          ref: ${{ (github.event_name == 'workflow_dispatch' && github.event.inputs.tag != '' && github.event.inputs.tag) || github.ref }}
+          ref: ${{ (github.event_name == 'workflow_dispatch' && github.event.inputs.tag != '' && github.event.inputs.tag) || github.event.workflow_run.head_branch }}
 
       - name: Verify tag exists (only for dispatch)
         if: github.event_name == 'workflow_dispatch'
@@ -43,7 +49,7 @@ jobs:
           echo "Tag '${{ github.event.inputs.tag }}' verified successfully"
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: '20'
           registry-url: 'https://registry.npmjs.org'
