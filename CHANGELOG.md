@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.0.4 (2026-01-05)
+
+### Bug Fixes
+
+* **client:** add error handling for failed header signature creation
+
 ## 2.0.3 (2025-09-11)
 
 ### Features
