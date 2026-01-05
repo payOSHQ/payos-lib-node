@@ -24,7 +24,7 @@ jobs:
     # Only run if tests passed and this is a tag push, or manual dispatch
     if: |
       github.event_name == 'workflow_dispatch' ||
-      (github.event.workflow_run.conclusion == 'success' && startsWith(github.event.workflow_run.head_branch, 'refs/tags/v'))
+      (github.event.workflow_run.conclusion == 'success' && startsWith(github.event.workflow_run.head_branch, 'v'))
 
     permissions:
       id-token: write # Required for provenance
