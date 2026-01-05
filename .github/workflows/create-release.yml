@@ -1,26 +1,34 @@
 name: Create Github Release
 
 on:
-  push:
-    tags:
-      - 'v[0-9]+.[0-9]+.[0-9]+'
-      - 'v[0-9]+.[0-9]+.[0-9]+-*'
+  workflow_run:
+    workflows: ["Run Tests"]
+    types:
+      - completed
+    branches:
+      - '**'
 
 jobs:
   create-release:
     runs-on: ubuntu-latest
+    # Only run if tests passed and this is a tag push
+    if: |
+      github.event.workflow_run.conclusion == 'success' &&
+      startsWith(github.event.workflow_run.head_branch, 'v')
 
     permissions:
       contents: write
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.workflow_run.head_branch }}
 
       - name: Extract version information
         id: version_info
         run: |
-          VERSION="${{ github.ref_name }}"
+          VERSION="${{ github.event.workflow_run.head_branch }}"
           echo "version=$VERSION" >> $GITHUB_OUTPUT
 
           # Check if current version is pre-release (e.g. alpha / beta / rc)

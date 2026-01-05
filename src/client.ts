@@ -291,6 +291,9 @@ export class PayOS {
 
         case 'header':
           signature = await this.crypto.createSignature(this.checksumKey, body);
+          if (!signature) {
+            throw new Errors.InvalidSignatureError('Failed to create header signature');
+          }
           requestHeaders =
             requestHeaders ? { ...requestHeaders, 'x-signature': signature } : { 'x-signature': signature };
           break;
