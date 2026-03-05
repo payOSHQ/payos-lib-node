@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.0.5 (2026-03-05)
+
+### Bug Fixes
+
+* **error:** fix incorrect error code mapping for Forbidden errors (403) in APIError.generateError
+
 ## 2.0.4 (2026-01-05)
 
 ### Bug Fixes
