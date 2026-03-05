@@ -70,7 +70,7 @@ export class APIError<
       case 401:
         return new UnauthorizedError(status, error, message, headers);
       case 403:
-        return new ForbiddenError(status, headers, message, headers);
+        return new ForbiddenError(status, error, message, headers);
       case 404:
         return new NotFoundError(status, error, message, headers);
       case 429:
