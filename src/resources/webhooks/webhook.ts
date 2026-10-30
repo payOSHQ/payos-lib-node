@@ -1,6 +1,8 @@
 import { PayOSError, WebhookError } from '../../core/error';
 import { RequestOptions } from '../../core/request-options';
 import { APIResource } from '../core';
+import { timingSafeEqualString } from '../../utils/timing-safe-equal';
+import { validateWebhookData } from './validate-webhook-data';
 
 export class Webhooks extends APIResource {
   /**
@@ -55,13 +57,15 @@ export class Webhooks extends APIResource {
       throw new WebhookError('Invalid webhook data');
     }
 
-    if (!signature) {
+    validateWebhookData(data);
+
+    if (typeof signature !== 'string' || signature.length === 0) {
       throw new WebhookError('Invalid signature');
     }
 
     const signedSignature = await this._client.crypto.createSignatureFromObj(data, this._client.checksumKey);
 
-    if (!signedSignature || signedSignature !== signature) {
+    if (!signedSignature || !timingSafeEqualString(signedSignature, signature)) {
       throw new WebhookError('Data not integrity');
     }
 

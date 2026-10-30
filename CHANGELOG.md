@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.0.6 (2026-10-30)
+
+### Bug Fixes
+
+* **webhooks:** stricter validation of webhook data before signature verification
+* **client:** fail closed when a signed response is missing its signature
+* **crypto:** constant-time signature comparison; remove Math.random UUID fallback (runtimes without `crypto.getRandomValues` now throw when generating a UUID)
+
 ## 2.0.5 (2026-03-05)
 
 ### Bug Fixes

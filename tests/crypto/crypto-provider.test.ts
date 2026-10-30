@@ -42,20 +42,34 @@ describe('SubtleCryptoProvider', () => {
       expect(await subtle.createSignatureOfPaymentRequest(null as any, 'test')).toBeNull();
     });
 
-    it('createUuidv4 returns a valid UUID and falls back when crypto.randomUUID is not present', () => {
+    it('createUuidv4 uses crypto.randomUUID when present and throws without a secure RNG', () => {
       const original = (global as any).crypto;
 
       try {
-        // if randomUUID exists, test the behavior when present
         (global as any).crypto = { randomUUID: () => '00000000-0000-4000-8000-000000000000' };
         const withBuiltin = subtle.createUuidv4();
         expect(withBuiltin).toBe('00000000-0000-4000-8000-000000000000');
 
-        // remove crypto.randomUUID to test fallback implementation
         (global as any).crypto = undefined;
-        const fallback = subtle.createUuidv4();
+        expect(() => subtle.createUuidv4()).toThrow('Secure random number generator unavailable');
+      } finally {
+        (global as any).crypto = original;
+      }
+    });
+
+    it('createUuidv4 falls back to crypto.getRandomValues when crypto.randomUUID is not present', () => {
+      const original = (global as any).crypto;
+
+      try {
+        (global as any).crypto = {
+          getRandomValues: (a: Uint8Array) => require('crypto').webcrypto.getRandomValues(a),
+        };
+        const first = subtle.createUuidv4();
+        const second = subtle.createUuidv4();
         const uuidV4Regex = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-        expect(uuidV4Regex.test(fallback)).toBe(true);
+        expect(uuidV4Regex.test(first)).toBe(true);
+        expect(uuidV4Regex.test(second)).toBe(true);
+        expect(first).not.toBe(second);
       } finally {
         (global as any).crypto = original;
       }

@@ -10,6 +10,7 @@ import { castToError } from './utils/error';
 import { safeJSON, validatePositiveInteger } from './utils/values';
 import { FinalRequestOptions, HeadersLike, HTTPMethod, RequestOptions } from './core/request-options';
 import { VERSION } from './version';
+import { timingSafeEqualString } from './utils/timing-safe-equal';
 
 const BASE_URL = 'https://api-merchant.payos.vn';
 
@@ -442,15 +443,17 @@ export class PayOS {
       const resSignature =
         signatureOpts.response === 'body' ? signature : response.headers.get('x-signature');
 
-      if (resSignature && data) {
-        const signedSignature =
-          signatureOpts.response === 'body' ?
-            await this.crypto.createSignatureFromObj(data, this.checksumKey)
-          : await this.crypto.createSignature(this.checksumKey, data);
+      if (typeof resSignature !== 'string' || resSignature.length === 0) {
+        throw new Errors.InvalidSignatureError('Missing response signature');
+      }
 
-        if (resSignature !== signedSignature) {
-          throw new Errors.InvalidSignatureError('Data integrity check failed');
-        }
+      const signedSignature =
+        signatureOpts.response === 'body' ?
+          await this.crypto.createSignatureFromObj(data, this.checksumKey)
+        : await this.crypto.createSignature(this.checksumKey, data);
+
+      if (!signedSignature || !timingSafeEqualString(signedSignature, resSignature)) {
+        throw new Errors.InvalidSignatureError('Data integrity check failed');
       }
     }
 

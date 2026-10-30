@@ -88,6 +88,10 @@ const webhookData = await payos.webhooks.verify({
 });
 ```
 
+- `verify()` rejects malformed payloads with `WebhookError('Invalid webhook data: …')`. Pass the webhook body exactly as parsed from the request JSON.
+- Always use the data returned by `verify()`, not the raw request body.
+- Never fulfil orders from client-side callbacks or from the unsigned `code`/`success` envelope fields.
+
 For more information about webhooks, see [the API doc](https://payos.vn/docs/api/#tag/payment-webhook/operation/payment-webhook).
 
 ### Handling errors
