@@ -1,6 +1,6 @@
 import { readEnv } from './utils/env';
 import { Logger, LogLevel, loggerFor, formatRequestDetail, parseLogLevel } from './utils/log';
-import { getDefaultFetch } from './utils/detect-platform';
+import { getDefaultFetch, isRunningInBrowser } from './utils/detect-platform';
 import { CryptoProvider, createCryptoProvider } from './crypto';
 import { PaymentRequests, Payouts, PayoutsAccount, Webhooks } from './resources';
 import { CreatePaymentLinkRequest } from './resources/v2/payment-requests';
@@ -8,9 +8,19 @@ import { APIResponse, DataType, FileDownloadResponse } from './core/api-response
 import * as Errors from './core/error';
 import { castToError } from './utils/error';
 import { safeJSON, validatePositiveInteger } from './utils/values';
+import { validateResponseData } from './utils/validate-response-data';
 import { FinalRequestOptions, HeadersLike, HTTPMethod, RequestOptions } from './core/request-options';
 import { VERSION } from './version';
 import { timingSafeEqualString } from './utils/timing-safe-equal';
+
+const MAX_REDIRECTS = 5;
+const SENSITIVE_REDIRECT_HEADERS = new Set([
+  'x-api-key',
+  'x-client-id',
+  'authorization',
+  'cookie',
+  'proxy-authorization',
+]);
 
 const BASE_URL = 'https://api-merchant.payos.vn';
 
@@ -176,6 +186,62 @@ export class PayOS {
       Object.assign(headers, additionalHeaders);
     }
     return headers;
+  }
+
+  /**
+   * Sends a request, following redirects manually so the credentials of the merchant never leave
+   * the API origin: `x-api-key`, `x-client-id`, `authorization` and `cookie` are dropped when a
+   * redirect points to another origin (`fetch` only drops `authorization`). Redirects are left to
+   * `fetch` when the caller sets `redirect` explicitly or when running in a browser, where CORS
+   * already protects custom headers.
+   */
+  protected async fetchWithSafeRedirects(url: string, init: RequestInit): Promise<Response> {
+    if ((init.redirect !== undefined && init.redirect !== 'follow') || isRunningInBrowser()) {
+      return this.fetch(url, init as any);
+    }
+
+    let currentUrl = url;
+    let currentInit: RequestInit = { ...init, redirect: 'manual' };
+    for (let hop = 0; ; hop++) {
+      const response = await this.fetch(currentUrl, currentInit as any);
+      const status = (response as any)?.status;
+      const location =
+        typeof status === 'number' && status >= 300 && status < 400 ?
+          (response as any).headers?.get?.('location')
+        : null;
+      if (!location) {
+        return response;
+      }
+      if (hop >= MAX_REDIRECTS) {
+        throw new Errors.PayOSError(`Too many redirects (more than ${MAX_REDIRECTS})`);
+      }
+      await (response as any).body?.cancel?.().catch?.(() => {});
+
+      const next = new URL(location, currentUrl);
+      const method = String(currentInit.method ?? 'GET').toUpperCase();
+      const switchToGet = status === 303 || ((status === 301 || status === 302) && method === 'POST');
+      const headers: Record<string, string> = { ...((currentInit.headers as Record<string, string>) ?? {}) };
+      if (next.origin !== new URL(currentUrl).origin) {
+        for (const name of Object.keys(headers)) {
+          if (SENSITIVE_REDIRECT_HEADERS.has(name.toLowerCase())) {
+            delete headers[name];
+          }
+        }
+      }
+      if (switchToGet) {
+        for (const name of Object.keys(headers)) {
+          if (name.toLowerCase() === 'content-type') {
+            delete headers[name];
+          }
+        }
+      }
+      currentUrl = next.toString();
+      currentInit = {
+        ...currentInit,
+        headers,
+        ...(switchToGet && { method: 'GET', body: undefined }),
+      };
+    }
   }
 
   protected buildUrl(endpoint: string, queries?: Record<string, any>): string {
@@ -345,7 +411,7 @@ export class PayOS {
       throw new Errors.UserAbortError();
     }
 
-    const response = await this.fetch(url, fetchConfig as any).catch(castToError);
+    const response = await this.fetchWithSafeRedirects(url, fetchConfig).catch(castToError);
     const headersTime = Date.now();
 
     if (response instanceof Error) {
@@ -445,6 +511,10 @@ export class PayOS {
 
       if (typeof resSignature !== 'string' || resSignature.length === 0) {
         throw new Errors.InvalidSignatureError('Missing response signature');
+      }
+
+      if (signatureOpts.response === 'body') {
+        validateResponseData(data);
       }
 
       const signedSignature =
@@ -557,7 +627,7 @@ export class PayOS {
       throw new Errors.UserAbortError();
     }
 
-    const response = await this.fetch(url, fetchConfig as any).catch(castToError);
+    const response = await this.fetchWithSafeRedirects(url, fetchConfig).catch(castToError);
     const headersTime = Date.now();
 
     if (response instanceof Error) {

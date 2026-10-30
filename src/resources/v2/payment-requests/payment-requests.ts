@@ -1,5 +1,6 @@
 import { RequestOptions } from '../../../core/request-options';
 import { APIResource } from '../../../core/resource';
+import { encodePathSegment } from '../../../utils/path';
 import { Invoices } from './invoices';
 
 export class PaymentRequests extends APIResource {
@@ -45,7 +46,7 @@ export class PaymentRequests extends APIResource {
    */
   async get(orderCode: number, options?: RequestOptions): Promise<PaymentLink>;
   async get(id: string | number, options?: RequestOptions): Promise<PaymentLink> {
-    const data = await this._client.get<PaymentLink>(`/v2/payment-requests/${id}`, {
+    const data = await this._client.get<PaymentLink>(`/v2/payment-requests/${encodePathSegment('id', id)}`, {
       ...options,
       signatureOpts: { response: 'body' },
     });
@@ -88,7 +89,7 @@ export class PaymentRequests extends APIResource {
       cancellationReason ? { cancellationReason: cancellationReason } : undefined;
 
     const data = await this._client.post<PaymentLink, CancelPaymentLinkRequest>(
-      `/v2/payment-requests/${id}/cancel`,
+      `/v2/payment-requests/${encodePathSegment('id', id)}/cancel`,
       {
         ...options,
         body: requestData,

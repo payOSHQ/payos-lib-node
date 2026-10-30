@@ -3,5 +3,6 @@ export * from './detect-platform';
 export * from './env';
 export * from './error';
 export * from './log';
+export * from './path';
 export * from './sort-obj-by-key';
 export * from './values';
