@@ -17,6 +17,7 @@ const MAX_REDIRECTS = 5;
 const SENSITIVE_REDIRECT_HEADERS = new Set([
   'x-api-key',
   'x-client-id',
+  'x-partner-code',
   'authorization',
   'cookie',
   'proxy-authorization',
@@ -190,10 +191,10 @@ export class PayOS {
 
   /**
    * Sends a request, following redirects manually so the credentials of the merchant never leave
-   * the API origin: `x-api-key`, `x-client-id`, `authorization` and `cookie` are dropped when a
-   * redirect points to another origin (`fetch` only drops `authorization`). Redirects are left to
-   * `fetch` when the caller sets `redirect` explicitly or when running in a browser, where CORS
-   * already protects custom headers.
+   * the API origin: `x-api-key`, `x-client-id`, `x-partner-code`, `authorization`, `cookie` and
+   * `proxy-authorization` are dropped when a redirect points to another origin (`fetch` only drops
+   * `authorization`). Redirects are left to `fetch` when the caller sets `redirect` explicitly or
+   * when running in a browser, where CORS already protects custom headers.
    */
   protected async fetchWithSafeRedirects(url: string, init: RequestInit): Promise<Response> {
     if ((init.redirect !== undefined && init.redirect !== 'follow') || isRunningInBrowser()) {
