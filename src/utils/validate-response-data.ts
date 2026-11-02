@@ -1,8 +1,8 @@
 import { InvalidSignatureError } from '../core/error';
 
 const KEY_PATTERN = /^[A-Za-z0-9_]+$/;
-// A `&key=` sequence inside a value is what lets the unencoded signed string be re-split into other fields.
-const SMUGGLING_PATTERN = /&[A-Za-z0-9_]+=/;
+// A `&key=` sequence inside a value would let the unencoded signed string be split into other fields.
+const KEY_DELIMITER_PATTERN = /&[A-Za-z0-9_]+=/;
 
 const invalid = (reason: string) => new InvalidSignatureError(`Invalid response data: ${reason}`);
 
@@ -11,7 +11,7 @@ const validateScalar = (path: string, value: unknown): void => {
     return;
   }
   if (typeof value === 'string') {
-    if (SMUGGLING_PATTERN.test(value)) {
+    if (KEY_DELIMITER_PATTERN.test(value)) {
       throw invalid(`"${path}" must not contain a "&key=" sequence`);
     }
   } else if (typeof value === 'number') {

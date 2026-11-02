@@ -14,6 +14,9 @@ import { VERSION } from './version';
 import { timingSafeEqualString } from './utils/timing-safe-equal';
 
 const MAX_REDIRECTS = 5;
+const REDIRECT_STATUSES = new Set([301, 302, 303, 307, 308]);
+// Recognised by the request paths so an exhausted redirect chain is not retried.
+class TooManyRedirectsError extends Errors.PayOSError {}
 const SENSITIVE_REDIRECT_HEADERS = new Set([
   'x-api-key',
   'x-client-id',
@@ -201,45 +204,44 @@ export class PayOS {
       return this.fetch(url, init as any);
     }
 
+    const originalOrigin = new URL(url).origin;
+    let leftOrigin = false;
     let currentUrl = url;
-    let currentInit: RequestInit = { ...init, redirect: 'manual' };
+    const headers = new Headers(init.headers as ConstructorParameters<typeof Headers>[0]);
+    // Custom `fetch` implementations receive a plain object, as before redirects were handled here.
+    let currentInit: RequestInit = {
+      ...init,
+      headers: Object.fromEntries(headers.entries()),
+      redirect: 'manual',
+    };
     for (let hop = 0; ; hop++) {
       const response = await this.fetch(currentUrl, currentInit as any);
       const status = (response as any)?.status;
-      const location =
-        typeof status === 'number' && status >= 300 && status < 400 ?
-          (response as any).headers?.get?.('location')
-        : null;
+      const location = REDIRECT_STATUSES.has(status) ? (response as any).headers?.get?.('location') : null;
       if (!location) {
         return response;
       }
-      if (hop >= MAX_REDIRECTS) {
-        throw new Errors.PayOSError(`Too many redirects (more than ${MAX_REDIRECTS})`);
-      }
       await (response as any).body?.cancel?.().catch?.(() => {});
+      if (hop >= MAX_REDIRECTS) {
+        throw new TooManyRedirectsError(`Too many redirects (more than ${MAX_REDIRECTS})`);
+      }
 
       const next = new URL(location, currentUrl);
       const method = String(currentInit.method ?? 'GET').toUpperCase();
       const switchToGet = status === 303 || ((status === 301 || status === 302) && method === 'POST');
-      const headers: Record<string, string> = { ...((currentInit.headers as Record<string, string>) ?? {}) };
-      if (next.origin !== new URL(currentUrl).origin) {
-        for (const name of Object.keys(headers)) {
-          if (SENSITIVE_REDIRECT_HEADERS.has(name.toLowerCase())) {
-            delete headers[name];
-          }
+      leftOrigin ||= next.origin !== originalOrigin;
+      if (leftOrigin) {
+        for (const name of SENSITIVE_REDIRECT_HEADERS) {
+          headers.delete(name);
         }
       }
       if (switchToGet) {
-        for (const name of Object.keys(headers)) {
-          if (name.toLowerCase() === 'content-type') {
-            delete headers[name];
-          }
-        }
+        headers.delete('content-type');
       }
       currentUrl = next.toString();
       currentInit = {
         ...currentInit,
-        headers,
+        headers: Object.fromEntries(headers.entries()),
         ...(switchToGet && { method: 'GET', body: undefined }),
       };
     }
@@ -416,6 +418,9 @@ export class PayOS {
     const headersTime = Date.now();
 
     if (response instanceof Error) {
+      if (response instanceof TooManyRedirectsError) {
+        throw new Errors.ConnectionError(response.message);
+      }
       const retryMessage = `retrying, ${retriesRemaining} attempts remaining`;
       if (fetchConfig.signal?.aborted && !timeoutSignal.aborted) {
         throw new Errors.UserAbortError();
@@ -632,6 +637,9 @@ export class PayOS {
     const headersTime = Date.now();
 
     if (response instanceof Error) {
+      if (response instanceof TooManyRedirectsError) {
+        throw new Errors.ConnectionError(response.message);
+      }
       const retryMessage = `retrying, ${retriesRemaining} attempts remaining`;
       if (fetchConfig.signal?.aborted && !timeoutSignal.aborted) {
         throw new Errors.UserAbortError();

@@ -245,13 +245,121 @@ describe('PayOS Client redirect handling', () => {
       expect(hops).toHaveLength(6);
     });
 
-    it('fails after more than 5 redirects', async () => {
+    const createDefaultRetryClient = (fetch: NonNullable<PayOSOptions['fetch']>) =>
+      new PayOS({
+        clientId: CLIENT_ID,
+        apiKey: API_KEY,
+        checksumKey: CHECKSUM_KEY,
+        partnerCode: PARTNER_CODE,
+        baseURL: BASE_URL,
+        fetch,
+      });
+
+    it('fails after more than 5 redirects without retrying', async () => {
       const { fetch, hops } = createFetch(chain(6));
+      const payos = createDefaultRetryClient(fetch);
+
+      const error = await payos.get('/v1/hop/0').catch((err: unknown) => err);
+
+      expect(error).toBeInstanceOf(PayOSError);
+      expect((error as Error).message).toContain('Too many redirects (more than 5)');
+      expect(fetch).toHaveBeenCalledTimes(6);
+      expect(hops.map((hop) => hop.url)).not.toContain(`${BASE_URL}/v1/hop/6`);
+    });
+
+    it('fails an invoice download after more than 5 redirects without retrying', async () => {
+      const start = `${BASE_URL}/v2/payment-requests/payment-link-id/invoices/invoice-id/download`;
+      const routes: Record<string, () => Response> = { [start]: redirectTo(302, '/v1/hop/1') };
+      for (let i = 1; i < 7; i++) {
+        routes[`${BASE_URL}/v1/hop/${i}`] = redirectTo(302, `/v1/hop/${i + 1}`);
+      }
+      const { fetch } = createFetch(routes);
+      const payos = createDefaultRetryClient(fetch);
+
+      const error = await payos.paymentRequests.invoices
+        .download('invoice-id', { paymentLinkId: 'payment-link-id' })
+        .catch((err: unknown) => err);
+
+      expect(error).toBeInstanceOf(PayOSError);
+      expect((error as Error).message).toContain('Too many redirects (more than 5)');
+      expect(fetch).toHaveBeenCalledTimes(6);
+    });
+
+    it('cancels the body of the last redirect response', async () => {
+      const cancel = jest.fn(async () => {});
+      const routes = chain(6);
+      routes[`${BASE_URL}/v1/hop/5`] = () => {
+        const response = redirectTo(302, '/v1/hop/6')();
+        Object.defineProperty(response, 'body', { value: { cancel } });
+        return response;
+      };
+      const { fetch } = createFetch(routes);
       const payos = createClient(fetch);
 
       await expect(payos.get('/v1/hop/0')).rejects.toBeInstanceOf(PayOSError);
-      expect(hops).toHaveLength(6);
-      expect(hops.map((hop) => hop.url)).not.toContain(`${BASE_URL}/v1/hop/6`);
+      expect(cancel).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('redirect statuses', () => {
+    it.each([300, 304, 305, 306, 399])('%i with a Location header is not followed', async (status) => {
+      const target = `${BASE_URL}/v1/next`;
+      const { fetch, hops } = createFetch({
+        [`${BASE_URL}/v1/start`]: () =>
+          new Response(status === 304 ? null : '', { status, headers: { Location: target } }),
+        [target]: ok,
+      });
+      const payos = createClient(fetch);
+
+      await expect(payos.get('/v1/start')).rejects.toBeInstanceOf(APIError);
+      expect(hops).toHaveLength(1);
+    });
+  });
+
+  describe('caller-supplied header shapes', () => {
+    const target = 'https://other.payos.test/v1/next';
+    const credentialPairs: [string, string][] = [
+      ['X-Api-Key', API_KEY],
+      ['Authorization', EXTRA_HEADERS.Authorization],
+      ['Cookie', EXTRA_HEADERS.Cookie],
+      ['X-Request-Tag', 'tag-1'],
+    ];
+    const shapes: [string, () => ConstructorParameters<typeof Headers>[0]][] = [
+      ['array of pairs', () => credentialPairs],
+      ['Headers instance', () => new Headers(credentialPairs)],
+    ];
+
+    const expectShape = (hops: { headers: Record<string, string> }[]) => {
+      expect(hops[0].headers['x-api-key']).toBe(API_KEY);
+      expect(hops[0].headers.authorization).toBe(EXTRA_HEADERS.Authorization);
+      expect(hops[1].headers['x-api-key']).toBe(API_KEY);
+      expect(hops[1].headers.cookie).toBe(EXTRA_HEADERS.Cookie);
+      expect(hops[2].headers).not.toHaveProperty('x-api-key');
+      expect(hops[2].headers).not.toHaveProperty('authorization');
+      expect(hops[2].headers).not.toHaveProperty('cookie');
+      expect(hops[2].headers['x-request-tag']).toBe('tag-1');
+    };
+
+    const routes = () => ({
+      [`${BASE_URL}/v1/start`]: redirectTo(302, '/v1/same'),
+      [`${BASE_URL}/v1/same`]: redirectTo(302, target),
+      [target]: ok,
+    });
+
+    it.each(shapes)('client-level fetchOptions.headers as %s', async (_label, make) => {
+      const { fetch, hops } = createFetch(routes());
+      const payos = createClient(fetch, { headers: make() });
+
+      await expect(payos.get('/v1/start')).resolves.toEqual(RESULT);
+      expectShape(hops);
+    });
+
+    it.each(shapes)('per-request fetchOptions.headers as %s', async (_label, make) => {
+      const { fetch, hops } = createFetch(routes());
+      const payos = createClient(fetch);
+
+      await expect(payos.get('/v1/start', { fetchOptions: { headers: make() } })).resolves.toEqual(RESULT);
+      expectShape(hops);
     });
   });
 
