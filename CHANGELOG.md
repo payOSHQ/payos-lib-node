@@ -7,6 +7,7 @@
 * **webhooks:** stricter validation of webhook data before signature verification ([GHSA-qrhp-2w9h-73m7](https://github.com/payOSHQ/payos-lib-node/security/advisories/GHSA-qrhp-2w9h-73m7))
 * **client:** fail closed when a signed response is missing its signature ([GHSA-6gcq-x2cf-jqw5](https://github.com/payOSHQ/payos-lib-node/security/advisories/GHSA-6gcq-x2cf-jqw5))
 * **crypto:** constant-time signature comparison; remove Math.random UUID fallback (runtimes without `crypto.getRandomValues` now throw when generating a UUID)
+* **client:** encode identifiers interpolated into API paths and reject dot segments, empty values and unsafe integers; drop `x-api-key`/`x-client-id`/`authorization`/`cookie` headers when a redirect leaves the API origin; validate body-signed response data before signature verification
 
 ## 2.0.5 (2026-03-05)
 
