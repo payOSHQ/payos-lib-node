@@ -1,6 +1,6 @@
 import { readEnv } from './utils/env';
 import { Logger, LogLevel, loggerFor, formatRequestDetail, parseLogLevel } from './utils/log';
-import { getDefaultFetch } from './utils/detect-platform';
+import { getDefaultFetch, isRunningInBrowser } from './utils/detect-platform';
 import { CryptoProvider, createCryptoProvider } from './crypto';
 import { PaymentRequests, Payouts, PayoutsAccount, Webhooks } from './resources';
 import { CreatePaymentLinkRequest } from './resources/v2/payment-requests';
@@ -8,8 +8,23 @@ import { APIResponse, DataType, FileDownloadResponse } from './core/api-response
 import * as Errors from './core/error';
 import { castToError } from './utils/error';
 import { safeJSON, validatePositiveInteger } from './utils/values';
+import { validateResponseData } from './utils/validate-response-data';
 import { FinalRequestOptions, HeadersLike, HTTPMethod, RequestOptions } from './core/request-options';
 import { VERSION } from './version';
+import { timingSafeEqualString } from './utils/timing-safe-equal';
+
+const MAX_REDIRECTS = 5;
+const REDIRECT_STATUSES = new Set([301, 302, 303, 307, 308]);
+// Recognised by the request paths so an exhausted redirect chain is not retried.
+class TooManyRedirectsError extends Errors.PayOSError {}
+const SENSITIVE_REDIRECT_HEADERS = new Set([
+  'x-api-key',
+  'x-client-id',
+  'x-partner-code',
+  'authorization',
+  'cookie',
+  'proxy-authorization',
+]);
 
 const BASE_URL = 'https://api-merchant.payos.vn';
 
@@ -175,6 +190,61 @@ export class PayOS {
       Object.assign(headers, additionalHeaders);
     }
     return headers;
+  }
+
+  /**
+   * Sends a request, following redirects manually so the credentials of the merchant never leave
+   * the API origin: `x-api-key`, `x-client-id`, `x-partner-code`, `authorization`, `cookie` and
+   * `proxy-authorization` are dropped when a redirect points to another origin (`fetch` only drops
+   * `authorization`). Redirects are left to `fetch` when the caller sets `redirect` explicitly or
+   * when running in a browser, where CORS already protects custom headers.
+   */
+  protected async fetchWithSafeRedirects(url: string, init: RequestInit): Promise<Response> {
+    if ((init.redirect !== undefined && init.redirect !== 'follow') || isRunningInBrowser()) {
+      return this.fetch(url, init as any);
+    }
+
+    const originalOrigin = new URL(url).origin;
+    let leftOrigin = false;
+    let currentUrl = url;
+    const headers = new Headers(init.headers as ConstructorParameters<typeof Headers>[0]);
+    // Custom `fetch` implementations receive a plain object, as before redirects were handled here.
+    let currentInit: RequestInit = {
+      ...init,
+      headers: Object.fromEntries(headers.entries()),
+      redirect: 'manual',
+    };
+    for (let hop = 0; ; hop++) {
+      const response = await this.fetch(currentUrl, currentInit as any);
+      const status = (response as any)?.status;
+      const location = REDIRECT_STATUSES.has(status) ? (response as any).headers?.get?.('location') : null;
+      if (!location) {
+        return response;
+      }
+      await (response as any).body?.cancel?.().catch?.(() => {});
+      if (hop >= MAX_REDIRECTS) {
+        throw new TooManyRedirectsError(`Too many redirects (more than ${MAX_REDIRECTS})`);
+      }
+
+      const next = new URL(location, currentUrl);
+      const method = String(currentInit.method ?? 'GET').toUpperCase();
+      const switchToGet = status === 303 || ((status === 301 || status === 302) && method === 'POST');
+      leftOrigin ||= next.origin !== originalOrigin;
+      if (leftOrigin) {
+        for (const name of SENSITIVE_REDIRECT_HEADERS) {
+          headers.delete(name);
+        }
+      }
+      if (switchToGet) {
+        headers.delete('content-type');
+      }
+      currentUrl = next.toString();
+      currentInit = {
+        ...currentInit,
+        headers: Object.fromEntries(headers.entries()),
+        ...(switchToGet && { method: 'GET', body: undefined }),
+      };
+    }
   }
 
   protected buildUrl(endpoint: string, queries?: Record<string, any>): string {
@@ -344,10 +414,13 @@ export class PayOS {
       throw new Errors.UserAbortError();
     }
 
-    const response = await this.fetch(url, fetchConfig as any).catch(castToError);
+    const response = await this.fetchWithSafeRedirects(url, fetchConfig).catch(castToError);
     const headersTime = Date.now();
 
     if (response instanceof Error) {
+      if (response instanceof TooManyRedirectsError) {
+        throw new Errors.ConnectionError(response.message);
+      }
       const retryMessage = `retrying, ${retriesRemaining} attempts remaining`;
       if (fetchConfig.signal?.aborted && !timeoutSignal.aborted) {
         throw new Errors.UserAbortError();
@@ -442,15 +515,21 @@ export class PayOS {
       const resSignature =
         signatureOpts.response === 'body' ? signature : response.headers.get('x-signature');
 
-      if (resSignature && data) {
-        const signedSignature =
-          signatureOpts.response === 'body' ?
-            await this.crypto.createSignatureFromObj(data, this.checksumKey)
-          : await this.crypto.createSignature(this.checksumKey, data);
+      if (typeof resSignature !== 'string' || resSignature.length === 0) {
+        throw new Errors.InvalidSignatureError('Missing response signature');
+      }
 
-        if (resSignature !== signedSignature) {
-          throw new Errors.InvalidSignatureError('Data integrity check failed');
-        }
+      if (signatureOpts.response === 'body') {
+        validateResponseData(data);
+      }
+
+      const signedSignature =
+        signatureOpts.response === 'body' ?
+          await this.crypto.createSignatureFromObj(data, this.checksumKey)
+        : await this.crypto.createSignature(this.checksumKey, data);
+
+      if (!signedSignature || !timingSafeEqualString(signedSignature, resSignature)) {
+        throw new Errors.InvalidSignatureError('Data integrity check failed');
       }
     }
 
@@ -554,10 +633,13 @@ export class PayOS {
       throw new Errors.UserAbortError();
     }
 
-    const response = await this.fetch(url, fetchConfig as any).catch(castToError);
+    const response = await this.fetchWithSafeRedirects(url, fetchConfig).catch(castToError);
     const headersTime = Date.now();
 
     if (response instanceof Error) {
+      if (response instanceof TooManyRedirectsError) {
+        throw new Errors.ConnectionError(response.message);
+      }
       const retryMessage = `retrying, ${retriesRemaining} attempts remaining`;
       if (fetchConfig.signal?.aborted && !timeoutSignal.aborted) {
         throw new Errors.UserAbortError();

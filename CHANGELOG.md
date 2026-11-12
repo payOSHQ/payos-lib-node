@@ -1,5 +1,14 @@
 # Changelog
 
+## 2.0.6 (2026-10-30)
+
+### Bug Fixes
+
+* **webhooks:** stricter validation of webhook data before signature verification ([GHSA-qrhp-2w9h-73m7](https://github.com/payOSHQ/payos-lib-node/security/advisories/GHSA-qrhp-2w9h-73m7))
+* **client:** fail closed when a signed response is missing its signature ([GHSA-6gcq-x2cf-jqw5](https://github.com/payOSHQ/payos-lib-node/security/advisories/GHSA-6gcq-x2cf-jqw5))
+* **crypto:** constant-time signature comparison; remove Math.random UUID fallback (runtimes without `crypto.getRandomValues` now throw when generating a UUID)
+* **client:** encode identifiers interpolated into API paths and reject dot segments, empty values and unsafe integers; follow only 301/302/303/307/308 redirects, at most 5 and without retrying once exceeded, dropping `x-api-key`/`x-client-id`/`x-partner-code`/`authorization`/`cookie`/`proxy-authorization` headers for the rest of the chain once it leaves the API origin; validate body-signed response data before signature verification ([GHSA-pq6c-7q48-2r83](https://github.com/payOSHQ/payos-lib-node/security/advisories/GHSA-pq6c-7q48-2r83), [GHSA-x466-5gm5-93jf](https://github.com/payOSHQ/payos-lib-node/security/advisories/GHSA-x466-5gm5-93jf), [GHSA-qh59-g3pq-32g5](https://github.com/payOSHQ/payos-lib-node/security/advisories/GHSA-qh59-g3pq-32g5))
+
 ## 2.0.5 (2026-03-05)
 
 ### Bug Fixes

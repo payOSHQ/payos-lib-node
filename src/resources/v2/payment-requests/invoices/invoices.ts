@@ -1,6 +1,7 @@
 import { FileDownloadResponse } from '../../../../core/api-response';
 import { RequestOptions } from '../../../../core/request-options';
 import { APIResource } from '../../../../core/resource';
+import { encodePathSegment } from '../../../../utils/path';
 
 export class Invoices extends APIResource {
   /**
@@ -23,10 +24,13 @@ export class Invoices extends APIResource {
   async get(params: InvoiceRetrieveParamsByOrderCode, options?: RequestOptions): Promise<InvoicesInfo>;
   async get(params: InvoiceRetrieveParams, options?: RequestOptions): Promise<InvoicesInfo> {
     const id = 'paymentLinkId' in params ? params.paymentLinkId : params.orderCode;
-    const data = await this._client.get<InvoicesInfo>(`/v2/payment-requests/${id}/invoices`, {
-      signatureOpts: { response: 'body' },
-      ...options,
-    });
+    const data = await this._client.get<InvoicesInfo>(
+      `/v2/payment-requests/${encodePathSegment('id', id)}/invoices`,
+      {
+        signatureOpts: { response: 'body' },
+        ...options,
+      },
+    );
 
     return data;
   }
@@ -66,7 +70,7 @@ export class Invoices extends APIResource {
   ): Promise<FileDownloadResponse> {
     const id = 'paymentLinkId' in params ? params.paymentLinkId : params.orderCode;
     const fileResponse = await this._client.downloadFile({
-      path: `/v2/payment-requests/${id}/invoices/${invoiceId}/download`,
+      path: `/v2/payment-requests/${encodePathSegment('id', id)}/invoices/${encodePathSegment('invoiceId', invoiceId)}/download`,
       method: 'GET',
       ...options,
     });

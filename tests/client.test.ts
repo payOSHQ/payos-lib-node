@@ -1022,6 +1022,34 @@ describe('PayOS Client', () => {
       );
     });
 
+    it('throws InvalidSignatureError when response body signature is missing', async () => {
+      const data = { result: 'ok' };
+      mockFetch.mockResolvedValueOnce(
+        new Response(JSON.stringify({ code: '00', desc: 'success', data }), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        }),
+      );
+      (payos as any).crypto = { createSignatureFromObj: jest.fn().mockResolvedValue('good') } as any;
+
+      const promise = payos.get('/v1/test', { signatureOpts: { response: 'body' } });
+      await expect(promise).rejects.toBeInstanceOf(PayOS.InvalidSignatureError);
+      await expect(promise).rejects.toThrow('Missing response signature');
+    });
+
+    it('throws InvalidSignatureError when response header signature is missing', async () => {
+      const data = { result: 'ok' };
+      const headers = new Headers({ 'Content-Type': 'application/json' });
+      mockFetch.mockResolvedValueOnce(
+        new Response(JSON.stringify({ code: '00', desc: 'success', data }), { status: 200, headers }),
+      );
+      (payos as any).crypto = { createSignature: jest.fn().mockResolvedValue('good') } as any;
+
+      const promise = payos.get('/v1/test', { signatureOpts: { response: 'header' } });
+      await expect(promise).rejects.toBeInstanceOf(PayOS.InvalidSignatureError);
+      await expect(promise).rejects.toThrow('Missing response signature');
+    });
+
     it('accepts valid response body signature', async () => {
       const data = { result: 'ok' };
       mockFetch.mockResolvedValueOnce(

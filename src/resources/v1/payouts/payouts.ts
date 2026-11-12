@@ -1,6 +1,7 @@
 import { GenericPage, Pagination } from '../../../core/pagination';
 import { FinalRequestOptions, RequestOptions } from '../../../core/request-options';
 import { APIResource } from '../../../core/resource';
+import { encodePathSegment } from '../../../utils/path';
 import { PayoutBatchRequest, Batch } from './batch';
 
 export class Payouts extends APIResource {
@@ -39,7 +40,7 @@ export class Payouts extends APIResource {
    * @returns {Promise<Payout>} A promise that resolves to a `Payout` object containing the payout’s details.
    */
   async get(payoutId: string, options?: RequestOptions): Promise<Payout> {
-    const data = await this._client.get<Payout>(`/v1/payouts/${payoutId}`, {
+    const data = await this._client.get<Payout>(`/v1/payouts/${encodePathSegment('payoutId', payoutId)}`, {
       signatureOpts: { response: 'header' },
       ...options,
     });

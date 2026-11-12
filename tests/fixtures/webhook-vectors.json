@@ -1,0 +1,188 @@
+{
+  "checksumKey": "payos_sec_2026_01_vector_key",
+  "signer": "legacy createSignatureFromObj (@payos/node 2.0.5)",
+  "cases": [
+    {
+      "id": "A1_full_payload_ampersand_in_name",
+      "expect": "accept",
+      "wireOnly": false,
+      "typed": true,
+      "body": "{\"code\":\"00\",\"desc\":\"success\",\"success\":true,\"data\":{\"accountNumber\":\"0123456789\",\"amount\":2000,\"code\":\"00\",\"counterAccountBankId\":\"970422\",\"counterAccountBankName\":\"MBBANK\",\"counterAccountName\":\"CONG TY TNHH A&B\",\"counterAccountNumber\":\"9876543210\",\"currency\":\"VND\",\"desc\":\"success\",\"description\":\"thanh toan don 100001\",\"orderCode\":100001,\"paymentLinkId\":\"3f2b9c1e8d7a4b6c9e0f1a2b3c4d5e6f\",\"reference\":\"FT26303123456\",\"transactionDateTime\":\"2026-10-30 10:00:00\",\"virtualAccountName\":\"\",\"virtualAccountNumber\":\"\"},\"signature\":\"9e98c1efc7bdb272004917fbbfc44eac672d3e33b534fc890080a7c5b76893cd\"}"
+    },
+    {
+      "id": "A2_optional_fields_null",
+      "expect": "accept",
+      "wireOnly": false,
+      "typed": true,
+      "body": "{\"code\":\"00\",\"desc\":\"success\",\"success\":true,\"data\":{\"accountNumber\":\"0123456789\",\"amount\":2000,\"code\":\"00\",\"counterAccountBankId\":null,\"counterAccountBankName\":null,\"counterAccountName\":null,\"counterAccountNumber\":null,\"currency\":\"VND\",\"desc\":\"success\",\"description\":\"thanh toan don 100001\",\"orderCode\":100001,\"paymentLinkId\":\"3f2b9c1e8d7a4b6c9e0f1a2b3c4d5e6f\",\"reference\":\"FT26303123456\",\"transactionDateTime\":\"2026-10-30 10:00:00\",\"virtualAccountName\":null,\"virtualAccountNumber\":null},\"signature\":\"6bc1ad6fc0f98d4bad9cf25773818c763222dc7bdc3b981a2fc649c48838679c\"}"
+    },
+    {
+      "id": "A3_optional_fields_absent",
+      "expect": "accept",
+      "wireOnly": true,
+      "typed": false,
+      "body": "{\"code\":\"00\",\"desc\":\"success\",\"success\":true,\"data\":{\"accountNumber\":\"0123456789\",\"amount\":2000,\"code\":\"00\",\"currency\":\"VND\",\"desc\":\"success\",\"description\":\"thanh toan don 100001\",\"orderCode\":100001,\"paymentLinkId\":\"3f2b9c1e8d7a4b6c9e0f1a2b3c4d5e6f\",\"reference\":\"FT26303123456\",\"transactionDateTime\":\"2026-10-30 10:00:00\"},\"signature\":\"a7b85507c2080b29d3db3fefaf5ae5adae0e8b89e9a363bda48545b5f5fe5222\"}"
+    },
+    {
+      "id": "A4_unknown_keys_allowed",
+      "expect": "accept",
+      "wireOnly": true,
+      "typed": false,
+      "body": "{\"code\":\"00\",\"desc\":\"success\",\"success\":true,\"data\":{\"accountNumber\":\"0123456789\",\"amount\":2000,\"code\":\"00\",\"counterAccountBankId\":\"970422\",\"counterAccountBankName\":\"MBBANK\",\"counterAccountName\":\"CONG TY TNHH A&B\",\"counterAccountNumber\":\"9876543210\",\"currency\":\"VND\",\"desc\":\"success\",\"description\":\"thanh toan don 100001\",\"orderCode\":100001,\"paymentLinkId\":\"3f2b9c1e8d7a4b6c9e0f1a2b3c4d5e6f\",\"reference\":\"FT26303123456\",\"transactionDateTime\":\"2026-10-30 10:00:00\",\"virtualAccountName\":\"\",\"virtualAccountNumber\":\"\",\"newField\":\"abc\",\"newCount\":5,\"newNullable\":null},\"signature\":\"32ee2b700ee99fed2258b583e64f3e4f1f98762c1d974253a7fe0aa731974736\"}"
+    },
+    {
+      "id": "A5_zero_order_code_empty_strings",
+      "expect": "accept",
+      "wireOnly": false,
+      "typed": true,
+      "body": "{\"code\":\"00\",\"desc\":\"success\",\"success\":true,\"data\":{\"accountNumber\":\"0123456789\",\"amount\":2000,\"code\":\"00\",\"counterAccountBankId\":\"970422\",\"counterAccountBankName\":\"MBBANK\",\"counterAccountName\":\"\",\"counterAccountNumber\":\"9876543210\",\"currency\":\"VND\",\"desc\":\"success\",\"description\":\"\",\"orderCode\":0,\"paymentLinkId\":\"3f2b9c1e8d7a4b6c9e0f1a2b3c4d5e6f\",\"reference\":\"FT26303123456\",\"transactionDateTime\":\"2026-10-30 10:00:00\",\"virtualAccountName\":\"\",\"virtualAccountNumber\":\"\"},\"signature\":\"00e3264aba305f94df6759935f30d8a2a47c15ff143808429daa30587fef4c72\"}"
+    },
+    {
+      "id": "R01_delimiter_smuggling",
+      "expect": "reject",
+      "wireOnly": false,
+      "typed": true,
+      "body": "{\"code\":\"00\",\"desc\":\"success\",\"success\":true,\"data\":{\"accountNumber\":\"0123456789\",\"amount\":2000,\"code\":\"00\",\"counterAccountBankId\":\"970422\",\"counterAccountBankName\":\"MBBANK\",\"counterAccountName\":\"CONG TY TNHH A&B\",\"counterAccountNumber\":\"9876543210\",\"currency\":\"VND\",\"desc\":\"success\",\"description\":\"pay\",\"orderCode\":999999,\"paymentLinkId\":\"forged&orderCode=100001&paymentLinkId=plink_100001\",\"reference\":\"FT26303123456\",\"transactionDateTime\":\"2026-10-30 10:00:00\",\"virtualAccountName\":\"\",\"virtualAccountNumber\":\"\"},\"signature\":\"7503c0b7adf010b952e3d9e5b6d52521f92216d39b20e76f061fd18e403eda13\"}"
+    },
+    {
+      "id": "R02_nested_object_value",
+      "expect": "reject",
+      "wireOnly": false,
+      "typed": false,
+      "body": "{\"code\":\"00\",\"desc\":\"success\",\"success\":true,\"data\":{\"accountNumber\":\"0123456789\",\"amount\":2000,\"code\":\"00\",\"counterAccountBankId\":\"970422\",\"counterAccountBankName\":\"MBBANK\",\"counterAccountName\":\"CONG TY TNHH A&B\",\"counterAccountNumber\":\"9876543210\",\"currency\":\"VND\",\"desc\":\"success\",\"description\":{\"$ne\":null,\"injected\":true},\"orderCode\":100001,\"paymentLinkId\":\"3f2b9c1e8d7a4b6c9e0f1a2b3c4d5e6f\",\"reference\":\"FT26303123456\",\"transactionDateTime\":\"2026-10-30 10:00:00\",\"virtualAccountName\":\"\",\"virtualAccountNumber\":\"\"},\"signature\":\"34d17fead8007ef272b582c18da27eae9ff787f0569858aa6362b5189ee6b771\"}"
+    },
+    {
+      "id": "R03_order_code_as_string",
+      "expect": "reject",
+      "wireOnly": false,
+      "typed": false,
+      "body": "{\"code\":\"00\",\"desc\":\"success\",\"success\":true,\"data\":{\"accountNumber\":\"0123456789\",\"amount\":2000,\"code\":\"00\",\"counterAccountBankId\":\"970422\",\"counterAccountBankName\":\"MBBANK\",\"counterAccountName\":\"CONG TY TNHH A&B\",\"counterAccountNumber\":\"9876543210\",\"currency\":\"VND\",\"desc\":\"success\",\"description\":\"thanh toan don 100001\",\"orderCode\":\"100001\",\"paymentLinkId\":\"3f2b9c1e8d7a4b6c9e0f1a2b3c4d5e6f\",\"reference\":\"FT26303123456\",\"transactionDateTime\":\"2026-10-30 10:00:00\",\"virtualAccountName\":\"\",\"virtualAccountNumber\":\"\"},\"signature\":\"9e98c1efc7bdb272004917fbbfc44eac672d3e33b534fc890080a7c5b76893cd\"}"
+    },
+    {
+      "id": "R04_amount_boolean",
+      "expect": "reject",
+      "wireOnly": false,
+      "typed": false,
+      "body": "{\"code\":\"00\",\"desc\":\"success\",\"success\":true,\"data\":{\"accountNumber\":\"0123456789\",\"amount\":true,\"code\":\"00\",\"counterAccountBankId\":\"970422\",\"counterAccountBankName\":\"MBBANK\",\"counterAccountName\":\"CONG TY TNHH A&B\",\"counterAccountNumber\":\"9876543210\",\"currency\":\"VND\",\"desc\":\"success\",\"description\":\"thanh toan don 100001\",\"orderCode\":100001,\"paymentLinkId\":\"3f2b9c1e8d7a4b6c9e0f1a2b3c4d5e6f\",\"reference\":\"FT26303123456\",\"transactionDateTime\":\"2026-10-30 10:00:00\",\"virtualAccountName\":\"\",\"virtualAccountNumber\":\"\"},\"signature\":\"d01f715aa5446915de5395eefe567dacef3da03c3ea2ebe4cb5c441e565e2066\"}"
+    },
+    {
+      "id": "R05_amount_fraction",
+      "expect": "reject",
+      "wireOnly": false,
+      "typed": false,
+      "body": "{\"code\":\"00\",\"desc\":\"success\",\"success\":true,\"data\":{\"accountNumber\":\"0123456789\",\"amount\":1.5,\"code\":\"00\",\"counterAccountBankId\":\"970422\",\"counterAccountBankName\":\"MBBANK\",\"counterAccountName\":\"CONG TY TNHH A&B\",\"counterAccountNumber\":\"9876543210\",\"currency\":\"VND\",\"desc\":\"success\",\"description\":\"thanh toan don 100001\",\"orderCode\":100001,\"paymentLinkId\":\"3f2b9c1e8d7a4b6c9e0f1a2b3c4d5e6f\",\"reference\":\"FT26303123456\",\"transactionDateTime\":\"2026-10-30 10:00:00\",\"virtualAccountName\":\"\",\"virtualAccountNumber\":\"\"},\"signature\":\"292db369e8264b56d169a87cea3481f341b4119005b8845fc4c60b80f5f2b0f1\"}"
+    },
+    {
+      "id": "R06_core_string_contains_equals",
+      "expect": "reject",
+      "wireOnly": false,
+      "typed": true,
+      "body": "{\"code\":\"00\",\"desc\":\"success\",\"success\":true,\"data\":{\"accountNumber\":\"0123456789\",\"amount\":2000,\"code\":\"00\",\"counterAccountBankId\":\"970422\",\"counterAccountBankName\":\"MBBANK\",\"counterAccountName\":\"CONG TY TNHH A&B\",\"counterAccountNumber\":\"9876543210\",\"currency\":\"VND\",\"desc\":\"success\",\"description\":\"thanh toan don 100001\",\"orderCode\":100001,\"paymentLinkId\":\"3f2b9c1e8d7a4b6c9e0f1a2b3c4d5e6f\",\"reference\":\"FT=1\",\"transactionDateTime\":\"2026-10-30 10:00:00\",\"virtualAccountName\":\"\",\"virtualAccountNumber\":\"\"},\"signature\":\"316e7835507502b938b137fe00863edde3956ac303dea6593168d2a6640211aa\"}"
+    },
+    {
+      "id": "R07_description_as_number",
+      "expect": "reject",
+      "wireOnly": false,
+      "typed": false,
+      "body": "{\"code\":\"00\",\"desc\":\"success\",\"success\":true,\"data\":{\"accountNumber\":\"0123456789\",\"amount\":2000,\"code\":\"00\",\"counterAccountBankId\":\"970422\",\"counterAccountBankName\":\"MBBANK\",\"counterAccountName\":\"CONG TY TNHH A&B\",\"counterAccountNumber\":\"9876543210\",\"currency\":\"VND\",\"desc\":\"success\",\"description\":123,\"orderCode\":100001,\"paymentLinkId\":\"3f2b9c1e8d7a4b6c9e0f1a2b3c4d5e6f\",\"reference\":\"FT26303123456\",\"transactionDateTime\":\"2026-10-30 10:00:00\",\"virtualAccountName\":\"\",\"virtualAccountNumber\":\"\"},\"signature\":\"dfe3274fb705772c9ab53cd7ab6641cd33d52731c89d396c93f7a94c86efbf10\"}"
+    },
+    {
+      "id": "R08_array_value",
+      "expect": "reject",
+      "wireOnly": false,
+      "typed": false,
+      "body": "{\"code\":\"00\",\"desc\":\"success\",\"success\":true,\"data\":{\"accountNumber\":\"0123456789\",\"amount\":2000,\"code\":\"00\",\"counterAccountBankId\":\"970422\",\"counterAccountBankName\":\"MBBANK\",\"counterAccountName\":\"CONG TY TNHH A&B\",\"counterAccountNumber\":\"9876543210\",\"currency\":\"VND\",\"desc\":\"success\",\"description\":[\"a\"],\"orderCode\":100001,\"paymentLinkId\":\"3f2b9c1e8d7a4b6c9e0f1a2b3c4d5e6f\",\"reference\":\"FT26303123456\",\"transactionDateTime\":\"2026-10-30 10:00:00\",\"virtualAccountName\":\"\",\"virtualAccountNumber\":\"\"},\"signature\":\"ea6fee8fa42b74fb7c86e280fc301dacef1ff822d4c2455ad567e0a8f895cf66\"}"
+    },
+    {
+      "id": "R09_missing_core_key",
+      "expect": "reject",
+      "wireOnly": true,
+      "typed": false,
+      "body": "{\"code\":\"00\",\"desc\":\"success\",\"success\":true,\"data\":{\"accountNumber\":\"0123456789\",\"amount\":2000,\"code\":\"00\",\"counterAccountBankId\":\"970422\",\"counterAccountBankName\":\"MBBANK\",\"counterAccountName\":\"CONG TY TNHH A&B\",\"counterAccountNumber\":\"9876543210\",\"currency\":\"VND\",\"desc\":\"success\",\"description\":\"thanh toan don 100001\",\"orderCode\":100001,\"paymentLinkId\":\"3f2b9c1e8d7a4b6c9e0f1a2b3c4d5e6f\",\"transactionDateTime\":\"2026-10-30 10:00:00\",\"virtualAccountName\":\"\",\"virtualAccountNumber\":\"\"},\"signature\":\"ec5ef644fa2ee029e5fb1c0b26f47fdcc9e98b140c685c737bd759b5602b7892\"}"
+    },
+    {
+      "id": "R10_proto_key",
+      "expect": "reject",
+      "wireOnly": true,
+      "typed": false,
+      "body": "{\"code\":\"00\",\"desc\":\"success\",\"success\":true,\"data\":{\"__proto__\":\"x\",\"accountNumber\":\"0123456789\",\"amount\":2000,\"code\":\"00\",\"counterAccountBankId\":\"970422\",\"counterAccountBankName\":\"MBBANK\",\"counterAccountName\":\"CONG TY TNHH A&B\",\"counterAccountNumber\":\"9876543210\",\"currency\":\"VND\",\"desc\":\"success\",\"description\":\"thanh toan don 100001\",\"orderCode\":100001,\"paymentLinkId\":\"3f2b9c1e8d7a4b6c9e0f1a2b3c4d5e6f\",\"reference\":\"FT26303123456\",\"transactionDateTime\":\"2026-10-30 10:00:00\",\"virtualAccountName\":\"\",\"virtualAccountNumber\":\"\"},\"signature\":\"9e98c1efc7bdb272004917fbbfc44eac672d3e33b534fc890080a7c5b76893cd\"}"
+    },
+    {
+      "id": "R11_unknown_key_value_contains_equals",
+      "expect": "reject",
+      "wireOnly": true,
+      "typed": false,
+      "body": "{\"code\":\"00\",\"desc\":\"success\",\"success\":true,\"data\":{\"accountNumber\":\"0123456789\",\"amount\":2000,\"code\":\"00\",\"counterAccountBankId\":\"970422\",\"counterAccountBankName\":\"MBBANK\",\"counterAccountName\":\"CONG TY TNHH A&B\",\"counterAccountNumber\":\"9876543210\",\"currency\":\"VND\",\"desc\":\"success\",\"description\":\"thanh toan don 100001\",\"orderCode\":100001,\"paymentLinkId\":\"3f2b9c1e8d7a4b6c9e0f1a2b3c4d5e6f\",\"reference\":\"FT26303123456\",\"transactionDateTime\":\"2026-10-30 10:00:00\",\"virtualAccountName\":\"\",\"virtualAccountNumber\":\"\",\"newField\":\"a=b\"},\"signature\":\"3c9c4d0fe03a8b8b8e13328602b28ee9e5ca8422303ec7bdd0ea2819fbc22793\"}"
+    },
+    {
+      "id": "R12_unknown_key_invalid_name",
+      "expect": "reject",
+      "wireOnly": true,
+      "typed": false,
+      "body": "{\"code\":\"00\",\"desc\":\"success\",\"success\":true,\"data\":{\"accountNumber\":\"0123456789\",\"amount\":2000,\"code\":\"00\",\"counterAccountBankId\":\"970422\",\"counterAccountBankName\":\"MBBANK\",\"counterAccountName\":\"CONG TY TNHH A&B\",\"counterAccountNumber\":\"9876543210\",\"currency\":\"VND\",\"desc\":\"success\",\"description\":\"thanh toan don 100001\",\"orderCode\":100001,\"paymentLinkId\":\"3f2b9c1e8d7a4b6c9e0f1a2b3c4d5e6f\",\"reference\":\"FT26303123456\",\"transactionDateTime\":\"2026-10-30 10:00:00\",\"virtualAccountName\":\"\",\"virtualAccountNumber\":\"\",\"bad-key\":\"x\"},\"signature\":\"bd04f9c20d094ca3027cf92c846a134e82c3c2735b6df739b643d9719d7c8572\"}"
+    },
+    {
+      "id": "R13_unknown_key_object_value",
+      "expect": "reject",
+      "wireOnly": true,
+      "typed": false,
+      "body": "{\"code\":\"00\",\"desc\":\"success\",\"success\":true,\"data\":{\"accountNumber\":\"0123456789\",\"amount\":2000,\"code\":\"00\",\"counterAccountBankId\":\"970422\",\"counterAccountBankName\":\"MBBANK\",\"counterAccountName\":\"CONG TY TNHH A&B\",\"counterAccountNumber\":\"9876543210\",\"currency\":\"VND\",\"desc\":\"success\",\"description\":\"thanh toan don 100001\",\"orderCode\":100001,\"paymentLinkId\":\"3f2b9c1e8d7a4b6c9e0f1a2b3c4d5e6f\",\"reference\":\"FT26303123456\",\"transactionDateTime\":\"2026-10-30 10:00:00\",\"virtualAccountName\":\"\",\"virtualAccountNumber\":\"\",\"newObj\":{\"a\":1}},\"signature\":\"da75fdfe7724806445a1e46cbfea8038590071a2b4f831e2b644c20d92d2debf\"}"
+    },
+    {
+      "id": "R14_signature_mismatch",
+      "expect": "reject",
+      "wireOnly": false,
+      "typed": true,
+      "body": "{\"code\":\"00\",\"desc\":\"success\",\"success\":true,\"data\":{\"accountNumber\":\"0123456789\",\"amount\":2000,\"code\":\"00\",\"counterAccountBankId\":\"970422\",\"counterAccountBankName\":\"MBBANK\",\"counterAccountName\":\"CONG TY TNHH A&B\",\"counterAccountNumber\":\"9876543210\",\"currency\":\"VND\",\"desc\":\"success\",\"description\":\"thanh toan don 100001\",\"orderCode\":100001,\"paymentLinkId\":\"3f2b9c1e8d7a4b6c9e0f1a2b3c4d5e6f\",\"reference\":\"FT26303123456\",\"transactionDateTime\":\"2026-10-30 10:00:00\",\"virtualAccountName\":\"\",\"virtualAccountNumber\":\"\"},\"signature\":\"0000000000000000000000000000000000000000000000000000000000000000\"}"
+    },
+    {
+      "id": "R15_signature_wrong_length",
+      "expect": "reject",
+      "wireOnly": false,
+      "typed": true,
+      "body": "{\"code\":\"00\",\"desc\":\"success\",\"success\":true,\"data\":{\"accountNumber\":\"0123456789\",\"amount\":2000,\"code\":\"00\",\"counterAccountBankId\":\"970422\",\"counterAccountBankName\":\"MBBANK\",\"counterAccountName\":\"CONG TY TNHH A&B\",\"counterAccountNumber\":\"9876543210\",\"currency\":\"VND\",\"desc\":\"success\",\"description\":\"thanh toan don 100001\",\"orderCode\":100001,\"paymentLinkId\":\"3f2b9c1e8d7a4b6c9e0f1a2b3c4d5e6f\",\"reference\":\"FT26303123456\",\"transactionDateTime\":\"2026-10-30 10:00:00\",\"virtualAccountName\":\"\",\"virtualAccountNumber\":\"\"},\"signature\":\"abc\"}"
+    },
+    {
+      "id": "A6_amount_max_safe_integer",
+      "expect": "accept",
+      "wireOnly": false,
+      "typed": true,
+      "body": "{\"code\":\"00\",\"desc\":\"success\",\"success\":true,\"data\":{\"accountNumber\":\"0123456789\",\"amount\":9007199254740991,\"code\":\"00\",\"counterAccountBankId\":\"970422\",\"counterAccountBankName\":\"MBBANK\",\"counterAccountName\":\"CONG TY TNHH A&B\",\"counterAccountNumber\":\"9876543210\",\"currency\":\"VND\",\"desc\":\"success\",\"description\":\"thanh toan don 100001\",\"orderCode\":100001,\"paymentLinkId\":\"3f2b9c1e8d7a4b6c9e0f1a2b3c4d5e6f\",\"reference\":\"FT26303123456\",\"transactionDateTime\":\"2026-10-30 10:00:00\",\"virtualAccountName\":\"\",\"virtualAccountNumber\":\"\"},\"signature\":\"0413e12fc1e14fc7ce4dc84fa783565340ac387bc5c3183253c47945311342d8\"}"
+    },
+    {
+      "id": "R16_amount_above_safe_integer",
+      "expect": "reject",
+      "wireOnly": false,
+      "typed": true,
+      "body": "{\"code\":\"00\",\"desc\":\"success\",\"success\":true,\"data\":{\"accountNumber\":\"0123456789\",\"amount\":9007199254740992,\"code\":\"00\",\"counterAccountBankId\":\"970422\",\"counterAccountBankName\":\"MBBANK\",\"counterAccountName\":\"CONG TY TNHH A&B\",\"counterAccountNumber\":\"9876543210\",\"currency\":\"VND\",\"desc\":\"success\",\"description\":\"thanh toan don 100001\",\"orderCode\":100001,\"paymentLinkId\":\"3f2b9c1e8d7a4b6c9e0f1a2b3c4d5e6f\",\"reference\":\"FT26303123456\",\"transactionDateTime\":\"2026-10-30 10:00:00\",\"virtualAccountName\":\"\",\"virtualAccountNumber\":\"\"},\"signature\":\"351ca3a7a78784d8ecf670abdb5bf8fa955095527af64babe5b03658ef1a1d5d\"}"
+    },
+    {
+      "id": "R17_amount_below_safe_integer",
+      "expect": "reject",
+      "wireOnly": false,
+      "typed": true,
+      "body": "{\"code\":\"00\",\"desc\":\"success\",\"success\":true,\"data\":{\"accountNumber\":\"0123456789\",\"amount\":-9007199254740992,\"code\":\"00\",\"counterAccountBankId\":\"970422\",\"counterAccountBankName\":\"MBBANK\",\"counterAccountName\":\"CONG TY TNHH A&B\",\"counterAccountNumber\":\"9876543210\",\"currency\":\"VND\",\"desc\":\"success\",\"description\":\"thanh toan don 100001\",\"orderCode\":100001,\"paymentLinkId\":\"3f2b9c1e8d7a4b6c9e0f1a2b3c4d5e6f\",\"reference\":\"FT26303123456\",\"transactionDateTime\":\"2026-10-30 10:00:00\",\"virtualAccountName\":\"\",\"virtualAccountNumber\":\"\"},\"signature\":\"a6b2095b1085fe671cd527e0b41aafa4551782eabd0432e8445e8c7e7730fc59\"}"
+    },
+    {
+      "id": "R18_order_code_int64_min",
+      "expect": "reject",
+      "wireOnly": false,
+      "typed": true,
+      "body": "{\"code\":\"00\",\"desc\":\"success\",\"success\":true,\"data\":{\"accountNumber\":\"0123456789\",\"amount\":2000,\"code\":\"00\",\"counterAccountBankId\":\"970422\",\"counterAccountBankName\":\"MBBANK\",\"counterAccountName\":\"CONG TY TNHH A&B\",\"counterAccountNumber\":\"9876543210\",\"currency\":\"VND\",\"desc\":\"success\",\"description\":\"thanh toan don 100001\",\"orderCode\":-9223372036854775808,\"paymentLinkId\":\"3f2b9c1e8d7a4b6c9e0f1a2b3c4d5e6f\",\"reference\":\"FT26303123456\",\"transactionDateTime\":\"2026-10-30 10:00:00\",\"virtualAccountName\":\"\",\"virtualAccountNumber\":\"\"},\"signature\":\"404fc8f70020ee8bca036cb8816b8059af517c0c61bddbdd40e06b70acf0b366\"}"
+    },
+    {
+      "id": "R19_order_code_int64_max",
+      "expect": "reject",
+      "wireOnly": false,
+      "typed": true,
+      "body": "{\"code\":\"00\",\"desc\":\"success\",\"success\":true,\"data\":{\"accountNumber\":\"0123456789\",\"amount\":2000,\"code\":\"00\",\"counterAccountBankId\":\"970422\",\"counterAccountBankName\":\"MBBANK\",\"counterAccountName\":\"CONG TY TNHH A&B\",\"counterAccountNumber\":\"9876543210\",\"currency\":\"VND\",\"desc\":\"success\",\"description\":\"thanh toan don 100001\",\"orderCode\":9223372036854775807,\"paymentLinkId\":\"3f2b9c1e8d7a4b6c9e0f1a2b3c4d5e6f\",\"reference\":\"FT26303123456\",\"transactionDateTime\":\"2026-10-30 10:00:00\",\"virtualAccountName\":\"\",\"virtualAccountNumber\":\"\"},\"signature\":\"86d1727602136316b160754273a51c23db1bcca07ecbf73b44ea82ab4cad9885\"}"
+    },
+    {
+      "id": "R20_key_trailing_newline",
+      "expect": "reject",
+      "wireOnly": true,
+      "typed": false,
+      "body": "{\"code\":\"00\",\"desc\":\"success\",\"success\":true,\"data\":{\"accountNumber\":\"0123456789\",\"amount\":2000,\"code\":\"00\",\"counterAccountBankId\":\"970422\",\"counterAccountBankName\":\"MBBANK\",\"counterAccountName\":\"CONG TY TNHH A&B\",\"counterAccountNumber\":\"9876543210\",\"currency\":\"VND\",\"desc\":\"success\",\"description\":\"thanh toan don 100001\",\"orderCode\":100001,\"paymentLinkId\":\"3f2b9c1e8d7a4b6c9e0f1a2b3c4d5e6f\",\"reference\":\"FT26303123456\",\"transactionDateTime\":\"2026-10-30 10:00:00\",\"virtualAccountName\":\"\",\"virtualAccountNumber\":\"\",\"newField\\n\":\"x\"},\"signature\":\"5a6094e577147b95659090f30b652956800564ae1d81d8c89701f6508cce84d2\"}"
+    }
+  ]
+}
