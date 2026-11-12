@@ -27,7 +27,7 @@ jobs:
       (github.event.workflow_run.conclusion == 'success' && startsWith(github.event.workflow_run.head_branch, 'v'))
 
     permissions:
-      id-token: write # Required for provenance
+      id-token: write # Required for trusted publishing and provenance
 
     steps:
       - name: Checkout code
@@ -51,15 +51,17 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: '20'
+          node-version: '24'
           registry-url: 'https://registry.npmjs.org'
 
       - name: Install dependencies
         run: npm ci
 
+      # The tag may predate the current publish script; use the one this workflow ships with.
+      - name: Use publish script from the workflow commit
+        run: git checkout ${{ github.sha }} -- scripts/publish-npm
+
       - name: Publish to NPM
         run: |
           chmod +x scripts/publish-npm
           ./scripts/publish-npm
-        env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}

@@ -2,18 +2,6 @@
 
 set -e
 
-# Verify NPM_TOKEN is set
-if [ -z "$NPM_TOKEN" ]; then
-    echo "Error: NPM_TOKEN environment variable is not set"
-    echo "Please set NPM_TOKEN before publishing"
-    exit 1
-fi
-
-npm config set '//registry.npmjs.org/:_authToken' "$NPM_TOKEN"
-
-# Print the NPM username for validation
-npm whoami
-
 echo "Cleaning lib directory..."
 rm -rf lib
 
